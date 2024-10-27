@@ -109,9 +109,9 @@ public class CloseRangeAttackStrategy : MainStrategyForBossX, IStrategy
     }
 }
 
-public class LongRangAttackStrategy : MainStrategyForBossX, IStrategy
+public class LongRangeAttackStrategy : MainStrategyForBossX, IStrategy
 {
-    public LongRangAttackStrategy(bool isBelong)
+    public LongRangeAttackStrategy(bool isBelong)
     {
         belongsSpecialAttackBranch = isBelong;
     }
@@ -151,7 +151,6 @@ public class LongRangAttackStrategy : MainStrategyForBossX, IStrategy
        
     }
 }
-
 
 public class JumpToAWayPointStrategy : MainStrategyForBossX, IStrategy
 {
@@ -217,7 +216,7 @@ public class JumpToAWayPointStrategy : MainStrategyForBossX, IStrategy
             referencePoint.x - Vector2.Distance(wayPoint, referencePoint) / 2f;
 
         float y3 = 4f;
-        float time = 1f;
+        float time = 0.6f;
         float x1 = referencePoint.x;
         float x2 = wayPoint.x;
 
@@ -263,7 +262,7 @@ public class JumpToAWayPointStrategy : MainStrategyForBossX, IStrategy
 
 public class DashAttackStrategy : MainStrategyForBossX, IStrategy
 {
-    float dashSpeed = 25f;
+    float dashSpeed = 35f;
     bool isDashReady = false; 
     AnimationClip attackAfterDash;
     float distance => Vector2.Distance(bossX.transform.position, playerController.transform.position);
@@ -297,10 +296,14 @@ public class DashAttackStrategy : MainStrategyForBossX, IStrategy
         else
         {
             if(bossX.specialOneCoroutineBlocker && belongsSpecialAttackBranch)
+            {
                 bossX.specialOneCoroutineBlocker = false;
+                  
+            }
+            bossX.probOfSpecialOneAttack = 0;
 
             blockCoroutine = false;
-            bossX.probOfSpecialOneAttack = 0;
+            
             return Node.NodeStatus.SUCCESS;
         }
     }
@@ -308,7 +311,7 @@ public class DashAttackStrategy : MainStrategyForBossX, IStrategy
     private IEnumerator ReadyAttack()
     {
         bossX.isStanceReady = true;
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(belongsSpecialAttackBranch ? 0.3f : 0.1f);
         isDashReady = true;
     }
 
@@ -371,7 +374,7 @@ class JumpAboveStrategy : MainStrategyForBossX, IStrategy
         else
         {
             blockCoroutine = false;
-            
+            bossX.inSpecialTwo = true;
             return Node.NodeStatus.SUCCESS;
         }
         
@@ -482,14 +485,19 @@ class LandAndInflictDamageStrategy : MainStrategyForBossX, IStrategy
         particleCollider.enabled = false;
         bossX.onLand = false;
         isInProgress = false;
-        bossX.isSpecialTwoReady = false;
+        bossX.inSpecialTwo = false;
     }
 }
 
 public class DieStrategy : MainStrategyForBossX, IStrategy
 {
     public Node.NodeStatus Evaluate()
-    {       
+    {
+        if (!bossX.inDeathProgressed)
+        {
+            bossX.inDeathToSayIsReady = true;
+            bossX.inDeathProgressed = true;
+        }
         bossX.canAvatarDie = true;
         return Node.NodeStatus.SUCCESS;
     }
@@ -500,6 +508,12 @@ public class DoNothingStrategy : MainStrategyForBossX, IStrategy
     //say something after death of player
     public Node.NodeStatus Evaluate()
     {
+        if (!bossX.inCharacterDeathProgressed)
+        {
+            bossX.inCharacterDeathToSayIsReady = true;
+            bossX.inCharacterDeathProgressed = true;
+        }
+        
         return Node.NodeStatus.SUCCESS;
     }
 }

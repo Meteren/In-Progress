@@ -64,9 +64,14 @@ public class PlayerController : MonoBehaviour
     BlackBoard blackBoard;
     void Start()
     {
+        DontDestroyOnLoad(this);
         currentHealth = maxHealth;
 
-        playerHealthBar.SetMaxHealth(maxHealth);
+        if(SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            playerHealthBar = GameObject.Find("Canvas").transform.Find("Player HealthBar").GetComponent<PlayerHealthBar>();
+            playerHealthBar.SetMaxHealth(maxHealth);
+        }
 
         blackBoard = GameManager.Instance.blackBoard;
 
@@ -224,6 +229,10 @@ public class PlayerController : MonoBehaviour
     public void OnDamage(float damageAmount)
     {
         currentHealth -= damageAmount;
+        if(playerHealthBar == null)
+        {
+            return;
+        }
         playerHealthBar.SetCurrentHealth(currentHealth);
         if(currentHealth <= 0)
         {

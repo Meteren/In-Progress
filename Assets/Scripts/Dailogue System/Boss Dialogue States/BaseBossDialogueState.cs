@@ -10,7 +10,7 @@ public abstract class BaseBossDialogueState : IState
     protected TextMeshProUGUI dialogue;
     protected int currentDialogueIndex = 0;
     private bool isTyping;
-    private float typeSpeed = 0.04f;
+    private float typeSpeed = 0.03f;
     private bool passNext = false;
     protected BaseBossDialogueState(BossX bossX, GameObject panel)
     {
@@ -106,7 +106,7 @@ public abstract class BaseBossDialogueState : IState
 
     protected IEnumerator WaitForNextText()
     {
-        yield return new WaitForSeconds(0.35f);
+        yield return new WaitForSeconds(1f);
         passNext = true;
     }
 }

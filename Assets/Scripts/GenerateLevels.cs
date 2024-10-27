@@ -7,8 +7,8 @@ using UnityEngine;
 
 public class GenerateLevels : MonoBehaviour
 {
-
-    [SerializeField] private Transform objectToBeGenerated;
+    int currentLevelIndex = 0;
+    [SerializeField] private List<Transform> objectsToBeGenerated;
     [SerializeField] private Transform player;
     [SerializeField] private float distanceForCreation;
     [SerializeField] private float distanceForDeletion;
@@ -21,14 +21,14 @@ public class GenerateLevels : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        start = objectToBeGenerated.Find("Start");
-        end = objectToBeGenerated.Find("End");
-        previousObject = Instantiate(objectToBeGenerated, objectToBeGenerated.position, Quaternion.identity,this.transform);
+        start = objectsToBeGenerated[currentLevelIndex].Find("Start");
+        end = objectsToBeGenerated[currentLevelIndex].Find("End");
+        previousObject = Instantiate(objectsToBeGenerated[currentLevelIndex], objectsToBeGenerated[currentLevelIndex].position, Quaternion.identity,this.transform);
         generatedLevels.Add(previousObject);
+        currentLevelIndex++;
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         DeleteGeneratedLevels();
@@ -58,10 +58,14 @@ public class GenerateLevels : MonoBehaviour
     private void GenerateLevel()
     {
         
-        Transform newObject = Instantiate(objectToBeGenerated, end.position + (previousObject.position - start.position), Quaternion.identity, this.transform);
+        Transform newObject = Instantiate(objectsToBeGenerated[currentLevelIndex], end.position + (previousObject.position - start.position), Quaternion.identity, this.transform);
         generatedLevels.Add(newObject);
         previousObject = newObject;
         start.position = newObject.Find("Start").position;
         end.position = newObject.Find("End").position;
+        currentLevelIndex++;
+        Debug.Log(currentLevelIndex);
+        if(objectsToBeGenerated.Count <= currentLevelIndex)
+            currentLevelIndex = 0;
     }
 }

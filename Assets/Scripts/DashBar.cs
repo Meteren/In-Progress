@@ -4,10 +4,11 @@ using UnityEngine.UI;
 public class DashBar : MonoBehaviour
 {
     [SerializeField] private Slider dashBarSlider;
-    [SerializeField] private PlayerController playerController;
+    [SerializeField] private PlayerController playerController =>
+        GameManager.instance.blackBoard.GetValue("PlayerController", out PlayerController _controller) ? _controller : null; 
     float maxVaue = 1f;
     float currentValue = 1f;
-    float fillSpeed = 1f;
+    float fillSpeed = 0.4f;
 
 
     private void Start()

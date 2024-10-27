@@ -5,12 +5,11 @@ using UnityEngine;
 
 public class BossX : MonoBehaviour
 {
-    [SerializeField] private DialogueContainer firstToSay;
-    [SerializeField] private DialogueContainer secondToSay;
-    [SerializeField] private DialogueContainer inAttackToSay;
+    
     [SerializeField] private GameObject panel;
     
-    [SerializeField] private PlayerController playerController;
+    private PlayerController playerController 
+        => GameManager.instance.blackBoard.GetValue("PlayerController", out PlayerController _controller) ? _controller : null;
     [SerializeField] private LayerMask ground;
     [SerializeField] private LayerMask bossXLayer;
     public SpriteRenderer bossXRenderer;
@@ -23,10 +22,18 @@ public class BossX : MonoBehaviour
     public float yVelocity;
     public float duration;
 
+    [Header("Dialogue States")] 
+    public bool specialOneProgressed = false;
+    public bool specialTwoProgressed = false;
+    public bool inDeathProgressed = false;
+    public bool inCharacterDeathProgressed = false;
+    public bool firstEncounterReady = true;
+    public bool inSpecialOneToSayIsReady = false;
+    public bool inSpecialTwoToSayIsReady = false;
+    public bool inDeathToSayIsReady = false;
+    public bool inCharacterDeathToSayIsReady = false;
+
     [Header("Conditions")]
-    public bool firstIsReady;
-    public bool secondIsReady;
-    public bool isInAttackReady;
     public bool isFacingLeft = true;
     public bool isInCloseRangeAttack = false;
     public bool isInLongRangeAttack = false;
@@ -34,22 +41,28 @@ public class BossX : MonoBehaviour
     public bool canAttack;
     public bool isDashReady = false;
     public bool isStanceReady = false;
-    public bool isInProgress = false;
+    public bool isRandomLongRangeInProgress = false;
+    public bool isNormalDashAttackInProgress = false;
     public bool isDashAttackInProgress = false;
     public bool isUpThere = false;
     public bool onLand = false;
     public bool isDead = false;
     public bool canAvatarDie = false;
+    public bool increaseProbOfDashAttack = false;
+    public bool initBossXSequence = false;
 
     [Header("Special Attack Conditions")]
     public bool specialOneCoroutineBlocker = false;
     public bool specialTwoCoroutineBlocker = false;
     public bool isSpecialOneReady = false;
     public bool isSpecialTwoReady = false;
+    public bool inSpecialTwo = false;
 
-    [HideInInspector]public float probOfLongRangeAttack;
-    [HideInInspector]public float probOfSpecialOneAttack;
-    [HideInInspector]public float probOfSpecialTwoAttack;
+
+    [HideInInspector] public float probOfLongRangeAttack;
+    [HideInInspector] public float probOfSpecialOneAttack;
+    [HideInInspector] public float probOfSpecialTwoAttack;
+    [HideInInspector] public float probOfDashAttack;
 
     [Header("Rb")]
     public Rigidbody2D rb;
@@ -87,11 +100,18 @@ public class BossX : MonoBehaviour
     public float currentHealth;
     public float maxHealth = 100;
 
+    [Header("Dialogues")]
+    [SerializeField] private DialogueContainer firstEncounter;
+    [SerializeField] private DialogueContainer inSepcialOneToSay;
+    [SerializeField] private DialogueContainer inSpecialTwoToSay;
+    [SerializeField] private DialogueContainer inDeathToSay;
+    [SerializeField] private DialogueContainer inCharacterDeathToSay;
+
     private void Start()
     {
         
         currentHealth = maxHealth;
-        //bossXHealthBar.SetMaxHealth(maxHealth);
+        bossXHealthBar.SetMaxHealth(maxHealth);
         
         defaultGravity = rb.gravityScale;
         IgnoreCollision();
@@ -130,13 +150,25 @@ public class BossX : MonoBehaviour
              {
                 StartCoroutine(GenerateNumberForSpecialAttackTwo());
              }
-             return (probOfSpecialTwoAttack > 50 && probOfSpecialTwoAttack < 100) && !firstIsReady;
+             return (probOfSpecialTwoAttack > 55) && !firstEncounterReady && isSpecialTwoReady;
         }));
         SequenceNode startSpecialAttackTwoSequence = new SequenceNode("StartSpecialAttackTwoSequence");
 
         Leaf jumpAboveStrategy = new Leaf("JumpAboveStrategy", new JumpAboveStrategy());
         Leaf landAndInflictDamageStrategy = new Leaf("LandAndInflictDamage", new LandAndInflictDamageStrategy());
 
+        SequenceNode normalDashAttackSequence = new SequenceNode("NormalDashAttackSequence", 5);
+        Leaf normalDashAttackCondition = new Leaf("NormalDashaAttackCondition", new Condition(() =>
+        {
+            if (!isNormalDashAttackInProgress)
+            {
+                StartCoroutine(GenerateNumberForDashAttack());
+            }
+
+            return probOfDashAttack > (isSpecialOneReady ? (increaseProbOfDashAttack ? 30 : 50) : 70) && distanceToPlayer > 4.6f && !firstEncounterReady;
+
+        }));
+        Leaf normalDashAttackStrategy = new Leaf("NormalDashAttackStrategy", new DashAttackStrategy(false));
 
         SequenceNode normalCloseRangeAttackSequence = new SequenceNode("CloseRangeAttackSequence", 20);
         SequenceNode specialCloseRangeAttackSequence = new SequenceNode("SpecialCloseRangeAttackSequence", 20);
@@ -146,24 +178,24 @@ public class BossX : MonoBehaviour
         SequenceNode chaseSequence = new SequenceNode("ChaseSequence", 20);
 
         Leaf stayStillStrategy = new Leaf("StayStill", new StayStillStrategy(), 30);
-        Leaf chaseCondition = new Leaf("ChaseCondition", new Condition(() => !firstIsReady));
+        Leaf chaseCondition = new Leaf("ChaseCondition", new Condition(() => !firstEncounterReady));
         Leaf chasePlayerStrategy = new Leaf("ChasePlayerStrategy", new ChasePlayerStrategy());
         Leaf closeRangeAttackCondition = new Leaf("AttackOneCondition", new Condition(() =>
-                    distanceToPlayer < 2.4f || isInCloseRangeAttack));
+                    distanceToPlayer < 2.4f && !isInCloseRangeAttack));
         Leaf normalCloseRangeAttackStrategy = new Leaf("NormalCloseRangeAttackStrategy", new CloseRangeAttackStrategy(false));
         Leaf specialCloseRangeAttackStrategy = new Leaf("SpecialCloseRangeAttackStrategy", new CloseRangeAttackStrategy(true));
         
         Leaf randomLongRangeAttackCondition = new Leaf("LongeRangeAttackCondition", new Condition(() =>
         {
-            if(!isInProgress)
-                StartCoroutine(GenerateNumberForRandomAttack());
-            return ((distanceToPlayer > 2.4f && distanceToPlayer < 5.6f) && (probOfLongRangeAttack > 60 && probOfLongRangeAttack < 100) || isInLongRangeAttack);
+            if(!isRandomLongRangeInProgress)
+                StartCoroutine(GenerateNumberForLongRangeAttack());
+            return ((distanceToPlayer > 2.4f && distanceToPlayer < 4.6f) && (probOfLongRangeAttack > 60 && probOfLongRangeAttack < 100));
         }));
 
-        Leaf longRangeAttackCondition = new Leaf("LongeRangeAttackCondition", new Condition(() => (distanceToPlayer > 2.4f && distanceToPlayer < 5.6f) || isInLongRangeAttack));
+        Leaf longRangeAttackCondition = new Leaf("LongeRangeAttackCondition", new Condition(() => (distanceToPlayer > 2.4f && distanceToPlayer < 5.6f)));
 
-        Leaf normalLongRangeAttackStrategy = new Leaf("NormalLongRangeAttackStrategy", new LongRangAttackStrategy(false));
-        Leaf specialLongRangeAttackStrategy = new Leaf("SpecialLongRangeAttackStrategy", new LongRangAttackStrategy(true));
+        Leaf normalLongRangeAttackStrategy = new Leaf("NormalLongRangeAttackStrategy", new LongRangeAttackStrategy(false));
+        Leaf specialLongRangeAttackStrategy = new Leaf("SpecialLongRangeAttackStrategy", new LongRangeAttackStrategy(true));
 
         Leaf specialDashAttackStrategy = new Leaf("AttackAfterDashStrategy", new DashAttackStrategy(true));
 
@@ -177,7 +209,7 @@ public class BossX : MonoBehaviour
             {
                 StartCoroutine(GenerateNumberForSpecialAttackOne());
             }            
-            return (probOfSpecialOneAttack > 30 && probOfSpecialOneAttack < 100) && !firstIsReady;  
+            return (probOfSpecialOneAttack > 75) && !firstEncounterReady && isSpecialOneReady;  
         }));
         
         SequenceNode startSpecialOneSequence = new SequenceNode("StartSpecialOneSequence");
@@ -231,9 +263,14 @@ public class BossX : MonoBehaviour
         chaseSequence.AddChild(chaseCondition);
         chaseSequence.AddChild(chasePlayerStrategy);
 
-        //Choose attack between long range and close range
-        selectNormalAttacks.AddChild(normalCloseRangeAttackSequence);
+        //randomized normal dash attack
+        normalDashAttackSequence.AddChild(normalDashAttackCondition);
+        normalDashAttackSequence.AddChild(normalDashAttackStrategy);
+
+        //Choose attack between long range, close range, and dash attack
+        selectNormalAttacks.AddChild(normalDashAttackSequence);
         selectNormalAttacks.AddChild(randomLongRangeAttackSequence);
+        selectNormalAttacks.AddChild(normalCloseRangeAttackSequence);
 
         //Start special attack two sequence
         startSpecialAttackTwoSequence.AddChild(jumpAboveStrategy);
@@ -267,18 +304,25 @@ public class BossX : MonoBehaviour
         bossXBehaviourTree.AddChild(mainSelector);
 
         var noDialogState = new NoDialogueState(this, panel);
-        var firstToSayState = new FirstToSayState(this, firstToSay, panel);
-        var secondToSayState = new SecondToSayState(this, secondToSay, panel);
-        var inAttackToSayState = new InAttackToSay(this, inAttackToSay, panel);
+        var firstEncaounterToSay = new FirstEncounterToSay(this, firstEncounter, panel);
+        var inSpecialOne = new InSpecialOneToSay(this, inSepcialOneToSay, panel);
+        var inSpecialTwo = new InSpecialTwoToSay(this, inSpecialTwoToSay, panel);
+        var inDeath = new InDeathToSay(inDeathToSay,this,panel);
+        var inCharacterDeath = new InCharacterDeathToSay(inCharacterDeathToSay, this, panel);
+        
 
         dialogueStateMachine.currentState = noDialogState;
 
-        At(noDialogState, firstToSayState, new FuncPredicate(() => firstIsReady));
-        At(firstToSayState, noDialogState, new FuncPredicate(() => !firstIsReady));
-        At(noDialogState, secondToSayState, new FuncPredicate(() => secondIsReady));
-        At(secondToSayState, noDialogState, new FuncPredicate(() => !secondIsReady));
-        At(noDialogState, inAttackToSayState, new FuncPredicate(() => isInAttackReady));
-        At(inAttackToSayState, noDialogState, new FuncPredicate(() => !isInAttackReady));
+        At(noDialogState, firstEncaounterToSay, new FuncPredicate(() => firstEncounterReady));
+        At(firstEncaounterToSay, noDialogState, new FuncPredicate(() => !firstEncounterReady));
+        At(noDialogState, inSpecialOne, new FuncPredicate(() => inSpecialOneToSayIsReady));
+        At(inSpecialOne, noDialogState, new FuncPredicate(() => !inSpecialOneToSayIsReady));
+        At(noDialogState, inSpecialTwo, new FuncPredicate(() => inSpecialTwoToSayIsReady));
+        At(inSpecialTwo, noDialogState, new FuncPredicate(() => !inSpecialTwoToSayIsReady));
+        At(noDialogState, inDeath, new FuncPredicate(() => inDeathToSayIsReady));
+        At(inDeath, noDialogState, new FuncPredicate(() => !inDeathToSayIsReady));
+        At(noDialogState, inCharacterDeath, new FuncPredicate(() => inCharacterDeathToSayIsReady));
+        At(inCharacterDeath, noDialogState, new FuncPredicate(() => !inCharacterDeathToSayIsReady));
 
     }
 
@@ -289,9 +333,10 @@ public class BossX : MonoBehaviour
         Gizmos.DrawLine(upPoint.position, new Vector2(upPoint.position.x - distanceToLeft, upPoint.position.y));
     }
 
+
     private void CollisionDetection()
     {
-        isJumped = !Physics2D.Raycast(transform.position, Vector2.down,distanceToGround,ground);
+        //isJumped = !Physics2D.Raycast(transform.position, Vector2.down,distanceToGround,ground);
         isUpThere = Physics2D.Raycast(upPoint.position, Vector2.left, distanceToLeft, bossXLayer) ||
             Physics2D.Raycast(upPoint.position, Vector2.right, distanceToRight, bossXLayer);
     }
@@ -305,14 +350,47 @@ public class BossX : MonoBehaviour
     {
         dialogueStateMachine.AddTransition(from, to, condition);
     }
+
+    private void FixedUpdate()
+    {
+        bossXBehaviourTree.Process();
+        CollisionDetection();
+    }
     private void Update()
     {
+        Debug.Log(currentHealth);
+        if (currentHealth < 65)
+        {
+            isSpecialOneReady = true;
+            if (!specialOneProgressed)
+            {
+                inSpecialOneToSayIsReady = true;
+                specialOneProgressed = true;
+            }
+                
+        }
+
+        if (currentHealth < 40)
+        {
+            isSpecialTwoReady = true;
+            if (!specialTwoProgressed)
+            {
+                inSpecialTwoToSayIsReady = true;
+                specialTwoProgressed = true;
+            }
+            
+        }
+
+        if (currentHealth < 30)
+        {
+            increaseProbOfDashAttack = true;
+        }
 
         SetDireaction();
-        if(currentHealth <= 0)
+        if (currentHealth <= 0)
         {
-            isDead = true;
-            
+            isDead = true; 
+
         }
 
         if (Input.GetKeyDown(KeyCode.L))
@@ -327,15 +405,10 @@ public class BossX : MonoBehaviour
             SetRotation();
 
         xVelocity = rb.velocity.x;
-        dialogueStateMachine.Update();
-        
-        bossXBehaviourTree.Process();
-        CollisionDetection();
+        if(GameManager.instance.init)
+            dialogueStateMachine.Update();
         AnimationController();
-
-      
     }
-
     private void AnimationController()
     {
         bossXAnim.SetFloat("xVelocity", xVelocity);
@@ -346,8 +419,8 @@ public class BossX : MonoBehaviour
         bossXAnim.SetBool("isInLongRangeAttack", isInLongRangeAttack);
         bossXAnim.SetBool("isInCloseRangeAttack", isInCloseRangeAttack);
         bossXAnim.SetBool("onLand", onLand);
-        bossXAnim.SetBool("isInSpecialTwo", isSpecialTwoReady);
         bossXAnim.SetBool("isDead", isDead);
+        bossXAnim.SetBool("inSpecialTwo", inSpecialTwo);
     }
 
     private void SetRotation()
@@ -385,19 +458,27 @@ public class BossX : MonoBehaviour
         channel.m_AmplitudeGain = 0;
     }
 
-    private IEnumerator GenerateNumberForRandomAttack()
+    private IEnumerator GenerateNumberForDashAttack()
+    {
+        probOfDashAttack = Random.Range(0, 100);
+        isNormalDashAttackInProgress = true;
+        yield return new WaitForSeconds(1f);
+        isNormalDashAttackInProgress = false;
+    }
+
+    private IEnumerator GenerateNumberForLongRangeAttack()
     {
         probOfLongRangeAttack = Random.Range(0, 100);
-        isInProgress = true;
+        isRandomLongRangeInProgress = true;
         yield return new WaitForSeconds(1f);
-        isInProgress = false;
+        isRandomLongRangeInProgress = false;
     }
 
     private IEnumerator GenerateNumberForSpecialAttackOne()
     {
         probOfSpecialOneAttack = Random.Range(0, 100);
         specialOneCoroutineBlocker = true;
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.5f);
         specialOneCoroutineBlocker = false;
     }
 
@@ -405,7 +486,7 @@ public class BossX : MonoBehaviour
     {
         probOfSpecialTwoAttack = Random.Range(0, 100);
         specialTwoCoroutineBlocker = true;
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
         specialTwoCoroutineBlocker = false;
     }
 

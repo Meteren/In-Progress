@@ -9,11 +9,12 @@ public class Gun : MonoBehaviour
     float angle;
     Vector2 direction;
     [SerializeField] private float offset;
-    [SerializeField] private PlayerController controller;
+    private PlayerController controller => 
+        GameManager.instance.blackBoard.GetValue("PlayerController", out PlayerController _controller) ? _controller : null; 
     [SerializeField] private ParticleSystem gunParticle;
     float timer = 0.4f;
     bool isTimerInProgress = false;
-    [SerializeField] private ParticleSystem gunExplositonEffect;
+    [SerializeField] private ParticleSystem gunExplosionEffect;
     private CinemachineBasicMultiChannelPerlin channel =>
         GameManager.instance.blackBoard.GetValue("Channel", out CinemachineBasicMultiChannelPerlin _channel) ? _channel : null;
 
@@ -26,9 +27,9 @@ public class Gun : MonoBehaviour
         }
         else
         {  
-            gunExplositonEffect.transform.position = transform.position;
+            gunExplosionEffect.transform.position = transform.position;
             Destroy(gameObject);
-            gunExplositonEffect.Play();
+            gunExplosionEffect.Play();
     
         }
         

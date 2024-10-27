@@ -1,7 +1,6 @@
 using UnityEngine;
 using AdvancedStateHandling;
 using UnityEngine.SceneManagement;
-using UnityEditor;
 using UnityEngine.Rendering.PostProcessing;
 using System.Collections;
 
@@ -60,7 +59,7 @@ public class MoveState : BasePlayerState
     {
         base.Update();
         xInput = Input.GetAxisRaw("Horizontal");
-        controller.rb.velocity = new Vector2(xInput * controller.charSpeed, controller.rb.velocity.y);
+        controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
         Debug.Log("MoveStateUpdate");
         if (Input.GetKeyDown(KeyCode.Space) && !controller.isJumped)
         {
@@ -72,7 +71,7 @@ public class MoveState : BasePlayerState
         {
             if(SceneManager.GetActiveScene().buildIndex == 0 && xInput != 0)
                 controller.isSliding = true;
-            if(SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
+            if(SceneManager.GetActiveScene().buildIndex != 0 && !controller.dashInCoolDown)
             {
                 controller.isInDash = true;
             }
@@ -82,7 +81,6 @@ public class MoveState : BasePlayerState
     }
 
 }
-
 public class SlideState : BasePlayerState
 {
 
@@ -342,14 +340,14 @@ public class DashState : BasePlayerState
         controller.controlDoubleJumpAnim = false;
         Time.timeScale = 0.3f;
         cAberration.active = true;
-        if(!controller.isJumped)
+        if(!controller.isJumped && SceneManager.GetActiveScene().buildIndex == 1)
             controller.dashParticles.Play();
     }
     public override void OnExit()
     {
         base.OnExit();
         controller.dashInCoolDown = true;
-        if (controller.dashParticles.isPlaying)
+        if (controller.dashParticles.isPlaying && SceneManager.GetActiveScene().buildIndex == 1)
             controller.dashParticles.Stop();
     }
 

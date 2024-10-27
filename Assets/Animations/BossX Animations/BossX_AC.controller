@@ -365,6 +365,12 @@ AnimatorController:
   m_Name: BossX_AC
   serializedVersion: 5
   m_AnimatorParameters:
+  - m_Name: inSpecialTwo
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   - m_Name: isStanceReady
     m_Type: 4
     m_DefaultFloat: 0
@@ -420,12 +426,6 @@ AnimatorController:
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
   - m_Name: onLand
-    m_Type: 4
-    m_DefaultFloat: 0
-    m_DefaultInt: 0
-    m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: isInSpecialTwo
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -487,7 +487,7 @@ AnimatorStateTransition:
     m_ConditionEvent: onLand
     m_EventTreshold: 0
   - m_ConditionMode: 2
-    m_ConditionEvent: isInSpecialTwo
+    m_ConditionEvent: inSpecialTwo
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 8353968487258686149}

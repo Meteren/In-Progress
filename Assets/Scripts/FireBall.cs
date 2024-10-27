@@ -33,7 +33,12 @@ public class FireBall : MonoBehaviour
         Debug.Log("Collision");
         if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
-            if(collision.gameObject.GetComponent<BossX>() != null && !collision.gameObject.GetComponent<BossX>().isDead)
+            PlayerController controller = GameManager.instance.blackBoard.GetValue("PlayerController", out PlayerController _controller) ? _controller : null;
+            if (controller != null)
+            {
+                Debug.Log("Not Null");
+            }
+            if (collision.gameObject.GetComponent<BossX>() != null && !collision.gameObject.GetComponent<BossX>().isDead && !controller.isDead)
             {
                 BossX bossX = collision.gameObject.GetComponent<BossX>();
                 bossX.OnDamage(InflictDamage());
@@ -51,7 +56,7 @@ public class FireBall : MonoBehaviour
 
     private float InflictDamage()
     {
-        float inflictedDamage = 2f;
+        float inflictedDamage = 1f;
         return inflictedDamage;
     }
 }

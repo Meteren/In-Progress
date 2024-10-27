@@ -1,3 +1,4 @@
+using AdvancedStateHandling;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,20 +32,20 @@ public class NoDialogueState : BaseBossDialogueState
     }
 
 }
-public class FirstToSayState : BaseBossDialogueState
+public class FirstEncounterToSay : BaseBossDialogueState
 {
-    DialogueContainer firstToSay;
+    DialogueContainer firstEncounterToSay;
 
-    public FirstToSayState(BossX bossX, DialogueContainer firstToSay, GameObject panel) : base(bossX,panel)
+    public FirstEncounterToSay(BossX bossX, DialogueContainer firstEncounterToSay, GameObject panel) : base(bossX,panel)
     {
-        this.firstToSay = firstToSay;
+        this.firstEncounterToSay = firstEncounterToSay;
     }
 
     public override void OnStart()
     {
         base.OnStart();
         dialogue.maxVisibleCharacters = 0;
-        dialogue.text = firstToSay.dialogues[currentDialogueIndex];
+        dialogue.text = firstEncounterToSay.dialogues[currentDialogueIndex];
         bossX.StartCoroutine(WriteTextOneByOne(dialogue));
     }
     public override void OnExit()
@@ -55,26 +56,26 @@ public class FirstToSayState : BaseBossDialogueState
     public override void Update()
     {
         base.Update();
-        DialogBoxController(firstToSay,out bool isReady,firstToSay.isInControl);
-        bossX.firstIsReady = isReady;
+        DialogBoxController(firstEncounterToSay,out bool isReady,firstEncounterToSay.isInControl);
+        bossX.firstEncounterReady = isReady;
 
     }
 
 }
 
 
-public class InAttackToSay : BaseBossDialogueState
+public class InSpecialOneToSay : BaseBossDialogueState
 {
-    DialogueContainer inAttackToSay;
-    public InAttackToSay(BossX bossX, DialogueContainer inAttackToSay, GameObject panel) : base(bossX, panel)
+    DialogueContainer inSpecialOneToSay;
+    public InSpecialOneToSay(BossX bossX, DialogueContainer inSpecialOneToSay, GameObject panel) : base(bossX, panel)
     {
-        this.inAttackToSay = inAttackToSay;
+        this.inSpecialOneToSay = inSpecialOneToSay;
     }
     public override void OnStart()
     {
         base.OnStart();
         dialogue.maxVisibleCharacters = 0;
-        dialogue.text = inAttackToSay.dialogues[currentDialogueIndex];
+        dialogue.text = inSpecialOneToSay.dialogues[currentDialogueIndex];
         bossX.StartCoroutine(WriteTextOneByOne(dialogue));
         
     }
@@ -87,24 +88,24 @@ public class InAttackToSay : BaseBossDialogueState
     public override void Update()
     {
         base.Update();
-        DialogBoxController(inAttackToSay,out bool isReady,inAttackToSay.isInControl);
-        bossX.isInAttackReady = isReady;
+        DialogBoxController(inSpecialOneToSay,out bool isReady,inSpecialOneToSay.isInControl);
+        bossX.inSpecialOneToSayIsReady = isReady;
     }
 }
 
-public class SecondToSayState : BaseBossDialogueState
+public class InSpecialTwoToSay : BaseBossDialogueState
 {
-    DialogueContainer secondToSay;
-    public SecondToSayState(BossX bossX, DialogueContainer secondToSay, GameObject panel) : base(bossX, panel)
+    DialogueContainer inSpecialTwoToSay;
+    public InSpecialTwoToSay(BossX bossX, DialogueContainer inSpecialTwoToSay, GameObject panel) : base(bossX, panel)
     {
-        this.secondToSay = secondToSay;
+        this.inSpecialTwoToSay = inSpecialTwoToSay;
     }
 
     public override void OnStart()
     {
         base.OnStart();
         dialogue.maxVisibleCharacters = 0;
-        dialogue.text = secondToSay.dialogues[currentDialogueIndex];
+        dialogue.text = inSpecialTwoToSay.dialogues[currentDialogueIndex];
         bossX.StartCoroutine(WriteTextOneByOne(dialogue));
     }
 
@@ -117,8 +118,67 @@ public class SecondToSayState : BaseBossDialogueState
     public override void Update()
     {
         base.Update();
-        //DialogBoxController(secondToSay,out bool isReady,dia);
-        //bossX.secondIsReady = isReady;
+        DialogBoxController(inSpecialTwoToSay,out bool isReady,inSpecialTwoToSay.isInControl);
+        bossX.inSpecialTwoToSayIsReady = isReady;
     }
 
+}
+
+public class InDeathToSay : BaseBossDialogueState, IState
+{
+    DialogueContainer inDeathToSay;
+    public InDeathToSay(DialogueContainer inDeathToSay, BossX bossX, GameObject panel) : base(bossX, panel)
+    {
+        this.inDeathToSay = inDeathToSay;
+    }
+
+    public override void OnStart()
+    {
+        base.OnStart();
+        dialogue.maxVisibleCharacters = 0;
+        dialogue.text = inDeathToSay.dialogues[currentDialogueIndex];
+        bossX.StartCoroutine(WriteTextOneByOne(dialogue));
+
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        DialogBoxController(inDeathToSay, out bool isReady, inDeathToSay.isInControl);
+        bossX.inDeathToSayIsReady = isReady;
+    }
+}
+
+public class InCharacterDeathToSay : BaseBossDialogueState, IState
+{
+    DialogueContainer inCharacterDeathToSay;
+    public InCharacterDeathToSay(DialogueContainer inCharacterDeathToSay,BossX bossX, GameObject panel) : base(bossX, panel)
+    {
+        this.inCharacterDeathToSay = inCharacterDeathToSay;
+    }
+
+
+    public override void OnStart()
+    {
+        base.OnStart();
+        dialogue.maxVisibleCharacters = 0;
+        dialogue.text = inCharacterDeathToSay.dialogues[currentDialogueIndex];
+        bossX.StartCoroutine(WriteTextOneByOne(dialogue));
+    }
+    public override void OnExit()
+    {
+        base.OnExit();
+    }
+    public override void Update()
+    {
+        base.Update();
+        DialogBoxController(inCharacterDeathToSay, out bool isReady, inCharacterDeathToSay.isInControl);
+        bossX.inCharacterDeathToSayIsReady = isReady;
+
+    }
 }
