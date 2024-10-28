@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class BossPoint : MonoBehaviour
 {
@@ -10,6 +7,8 @@ public class BossPoint : MonoBehaviour
         if(collision.gameObject.GetComponent<PlayerController>() != null)
         {
             GameManager.instance.TransitionScenes(1);
+            collision.gameObject.GetComponent<PlayerController>().canMove = false;
         }
     }
+
 }

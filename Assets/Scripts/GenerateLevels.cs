@@ -64,7 +64,6 @@ public class GenerateLevels : MonoBehaviour
         start.position = newObject.Find("Start").position;
         end.position = newObject.Find("End").position;
         currentLevelIndex++;
-        Debug.Log(currentLevelIndex);
         if(objectsToBeGenerated.Count <= currentLevelIndex)
             currentLevelIndex = 0;
     }

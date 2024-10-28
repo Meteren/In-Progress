@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace AdvancedStateHandling
 {
@@ -11,6 +12,7 @@ namespace AdvancedStateHandling
         protected float direction;
         private delegate void RollEvent();
         private event RollEvent checkRoll;
+        protected float moveSpeed = 8f;
         public PlayerController controller { get; private set; }
 
         public BasePlayerState(PlayerController controller)
@@ -34,7 +36,15 @@ namespace AdvancedStateHandling
         public virtual void Update()
         {
             Debug.Log("Base Update Called");
-            controller.HandleMovement();
+            if(SceneManager.GetActiveScene().buildIndex == 0)
+            {
+                controller.xAxis = 1;
+            }
+            else
+            {
+                controller.HandleMovement();
+            }
+            
         }
 
 

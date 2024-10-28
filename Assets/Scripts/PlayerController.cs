@@ -38,6 +38,9 @@ public class PlayerController : MonoBehaviour
     public bool isInDash;
     public bool isDamaged;
     public bool dashInCoolDown;
+    public bool isOnJumper;
+    public bool knockBack;
+    public bool canMove = true;
 
     [Header("Collision Detection Segment")]
     public bool freeToGetUp;
@@ -94,7 +97,11 @@ public class PlayerController : MonoBehaviour
         var dashState = new DashState(this);
         var damageState = new DamageState(this);
         var deathState = new DeathState(this);
+        var afterStepOnJumper = new AfterStepOnJumperState(this);
+        var knockBackState = new KnockBackState(this);
+        var stayStillState = new StayStillState(this);
 
+        At(moveState, fallState, new FuncPredicate(() => isJumped));
         At(afterDoubleJumpFallState, rollState, new FuncPredicate(() => canRoll && rb.velocity.y == 0));
         At(fallState, rollState, new FuncPredicate(() => canRoll && rb.velocity.y == 0));
         At(moveState, jumpState, new FuncPredicate(() => jump));
@@ -127,6 +134,17 @@ public class PlayerController : MonoBehaviour
         At(damageState, moveState, new FuncPredicate(() => !isDamaged && rb.velocity.y == 0));
 
         Any(deathState, new FuncPredicate(() => isDead));
+        Any(afterStepOnJumper, new FuncPredicate(() => isOnJumper));
+        
+        At(afterStepOnJumper,rollState, new FuncPredicate(() => !isJumped));
+        At(afterStepOnJumper, fallState, new FuncPredicate(() => isJumped && !isOnJumper));
+
+        Any(knockBackState, new FuncPredicate(() => knockBack));
+        At(knockBackState, moveState, new FuncPredicate(() => !knockBack && rb.velocity.y == 0));
+
+        Any(stayStillState, new FuncPredicate(() => !canMove));
+        At(stayStillState, moveState, new FuncPredicate(() => canMove));
+
         stateMachine.currentState = moveState;
     }
 
@@ -144,14 +162,17 @@ public class PlayerController : MonoBehaviour
     {
         
         CheckCollision();
-        SetRotation();
+        if(SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            SetRotation();
+        }
         AnimationController();
         stateMachine.Update();
     }
 
     public void CheckHighness()
     {
-        if(rb.velocity.y < -10)
+        if(rb.velocity.y < -20)
         {
             canRoll = true;
         }
@@ -179,6 +200,10 @@ public class PlayerController : MonoBehaviour
     
     private void ResDoubleJumpSit() => controlDoubleJumpAnim = false;
 
+    public void SetKnockBackToFalse() => knockBack = false;
+
+    public void SetVelocityToZero() => rb.velocity = Vector3.zero; 
+
     private void OnDrawGizmos()
     {
         Gizmos.DrawLine(transform.position, new Vector3(transform.position.x,transform.position.y + distanceToAbove));
@@ -203,6 +228,9 @@ public class PlayerController : MonoBehaviour
         playerAnimController.SetBool("canRoll",canRoll);
         playerAnimController.SetBool("isInDash", isInDash);
         playerAnimController.SetBool("isDead", isDead);
+        playerAnimController.SetBool("isOnJumper", isOnJumper);
+        playerAnimController.SetBool("knockBack", knockBack);
+
         
     }
 

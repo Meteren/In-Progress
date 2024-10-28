@@ -3,6 +3,7 @@ using AdvancedStateHandling;
 using UnityEngine.SceneManagement;
 using UnityEngine.Rendering.PostProcessing;
 using System.Collections;
+using Cinemachine;
 
 public class JumpState : BasePlayerState
 {
@@ -28,7 +29,15 @@ public class JumpState : BasePlayerState
 
         base.Update();
         Debug.Log("JumpStateUpdate");
-        controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        if(SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        }
+        else
+        {
+            controller.rb.velocity = new Vector2(moveSpeed, controller.rb.velocity.y);
+        }
+        
         if(Input.GetKeyDown(KeyCode.Space))
             controller.doubleJumped = true;
         if(Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
@@ -59,7 +68,15 @@ public class MoveState : BasePlayerState
     {
         base.Update();
         xInput = Input.GetAxisRaw("Horizontal");
-        controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        if(SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        }
+        else
+        {
+            controller.rb.velocity = new Vector2(moveSpeed, controller.rb.velocity.y);
+        }
+        
         Debug.Log("MoveStateUpdate");
         if (Input.GetKeyDown(KeyCode.Space) && !controller.isJumped)
         {
@@ -69,7 +86,7 @@ public class MoveState : BasePlayerState
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            if(SceneManager.GetActiveScene().buildIndex == 0 && xInput != 0)
+            if(SceneManager.GetActiveScene().buildIndex == 0)
                 controller.isSliding = true;
             if(SceneManager.GetActiveScene().buildIndex != 0 && !controller.dashInCoolDown)
             {
@@ -153,7 +170,15 @@ public class FallState : BasePlayerState
     {
         base.Update();
         Debug.Log("Fall State Update");
-        controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        if(SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        }
+        else
+        {
+            controller.rb.velocity = new Vector2(moveSpeed, controller.rb.velocity.y);
+        }
+        
 
         if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
         {
@@ -185,6 +210,7 @@ public class LedgeGrabState : BasePlayerState
         SetLedgeClimbDirection();
         HandleLedgePosition();
         Debug.Log("LedgeGrab Start");
+        controller.canRoll = false;
 
     }
 
@@ -252,7 +278,14 @@ public class DoubleJumpState : BasePlayerState
     public override void Update()
     {
         base.Update();
-        controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        if (SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        }
+        else
+        {
+            controller.rb.velocity = new Vector2(moveSpeed, controller.rb.velocity.y);
+        }
         if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
         {
             controller.isInDash = true;
@@ -282,7 +315,15 @@ public class AfterDoubleJumpFallState : BasePlayerState
     {
         base.Update();
         CheckHighness();
-        controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        if(SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            controller.rb.velocity = new Vector2(controller.xAxis * controller.charSpeed, controller.rb.velocity.y);
+        }
+        else
+        {
+            controller.rb.velocity = new Vector2(moveSpeed, controller.rb.velocity.y);
+        }
+       
         if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
         {
             controller.isInDash = true;
@@ -301,6 +342,7 @@ public class RollState : BasePlayerState
     public override void OnStart()
     {
         base.OnStart();
+        controller.rb.velocity = Vector2.zero;
         controller.rb.velocity = new Vector2(rollForce * direction, controller.rb.velocity.y);
         Debug.Log("Entered roll state");
         Time.timeScale = 0.3f;
@@ -311,6 +353,7 @@ public class RollState : BasePlayerState
         base.OnExit();
         Debug.Log("Exited roll state");
         Time.timeScale = 1f;
+        controller.canRoll = false;
     }
 
     public override void Update()
@@ -501,6 +544,146 @@ public class DeathState : BasePlayerState
         controller.rb.AddForce(new Vector2(bossX.direction.x * groundForce, controller.rb.velocity.y), ForceMode2D.Impulse);
         yield return new WaitForSeconds(0.1f);
         controller.rb.velocity = Vector2.zero;
+    }
+}
+
+public class AfterStepOnJumperState : BasePlayerState
+{
+    Vector2 force = new Vector2(20, 10);
+    float timer = 1f;
+    public AfterStepOnJumperState(PlayerController controller) : base(controller)
+    {
+    }
+
+    public override void OnStart()
+    {
+        Debug.Log("AfterJumper");
+        base.OnStart();
+        controller.rb.velocity = Vector2.zero;
+        controller.rb.AddForce(force, ForceMode2D.Impulse);
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        timer = 1f;
+        controller.isOnJumper = false;
+        controller.canRoll = true;
+    }
+
+
+    public override void Update()
+    {
+        //base.Update();
+        Debug.Log("Update of AfterJumper");
+        timer -= Time.deltaTime;
+        if(timer <= 0)
+        {
+            timer = 1f;
+            controller.isOnJumper = false;
+        }
+    }
+}
+
+public class KnockBackState : BasePlayerState
+{
+    float knockBackForce = 3f;
+    float secondKnockBackForce = 5f;
+    bool knockBackInitialized = false;
+    bool knockBackInTheAirInitialized = false;
+    CinemachineBasicMultiChannelPerlin channel;
+        
+    public KnockBackState(PlayerController controller) : base(controller)
+    {
+        channel =
+            GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>()
+            .GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+    }
+
+    public override void OnStart()
+    {
+        base.OnStart();
+        Debug.Log("Knockback Started");
+        controller.rb.velocity = Vector2.zero;
+        if (controller.isJumped)
+        {
+            controller.rb.AddForce(new Vector2(knockBackForce * (-1 * controller.xAxis), controller.rb.velocity.y), ForceMode2D.Impulse);
+            knockBackInTheAirInitialized = true;
+            
+        }
+            
+            
+        if (!controller.isJumped)
+            controller.rb.AddForce(new Vector2(secondKnockBackForce * (-1 * controller.xAxis), controller.rb.velocity.y), ForceMode2D.Impulse);
+        
+        controller.StartCoroutine(ShakePeriod());
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+        controller.rb.velocity = Vector2.zero;
+        knockBackInitialized = false;
+        knockBackInTheAirInitialized = false;
+    }
+
+    public override void Update()
+    {
+        //base.Update();
+        Debug.Log("KnockBack Update");
+        if (!controller.isJumped && !knockBackInitialized && knockBackInTheAirInitialized)
+        {
+            knockBackInitialized = true;
+            controller.rb.velocity = Vector2.zero;
+            controller.StartCoroutine(WaitOnTheGround());
+            
+        }
+    }
+
+    private IEnumerator WaitOnTheGround()
+    {
+        controller.rb.AddForce(new Vector2(secondKnockBackForce * (-1 * controller.xAxis), controller.rb.velocity.y), ForceMode2D.Impulse);
+        yield return new WaitForSeconds(0.2f);
+        controller.rb.velocity = Vector2.zero;
+        controller.getUpAnimController = true;
+    }
+
+    private IEnumerator ShakePeriod()
+    {
+        channel.m_AmplitudeGain = 2.5f;
+        yield return new WaitForSeconds(0.3f);
+        channel.m_AmplitudeGain = 0f;
+    }
+
+}
+
+public class StayStillState : BasePlayerState
+{
+    public StayStillState(PlayerController controller) : base(controller)
+    {
+    }
+
+
+    public override void OnStart()
+    {
+        base.OnStart();
+        controller.rb.velocity = Vector2.zero;
+        controller.xAxis = 0f;
+    }
+
+
+    public override void OnExit()
+    {
+        base.OnExit();
+    }
+
+    public override void Update()
+    {
+        //base.Update();
+        if(SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            controller.canMove = true;
+        }
     }
 }
 
