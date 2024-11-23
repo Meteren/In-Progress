@@ -42,7 +42,7 @@ public class FireBall : MonoBehaviour
             {
                 BossX bossX = collision.gameObject.GetComponent<BossX>();
                 bossX.OnDamage(InflictDamage());
-                SpriteRenderer bossXRenderer = bossX.bossXRenderer;
+                SpriteRenderer bossXRenderer = bossX.bossRenderer;
                 Vector2 contactPoint = collision.ClosestPoint(transform.position);
                 Vector2 oppositeDirection = new Vector2(-1 * Direction.x, Direction.y);
                 HitParticle clonedHitParticle = ObjectPooling.DequeuePool<HitParticle>("HitParticle");

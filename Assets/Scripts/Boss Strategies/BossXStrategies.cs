@@ -3,71 +3,15 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class MainStrategyForBossX 
+
+public abstract class MainStrategyForBossX : MainBossStrategy
 {
-    protected bool blockCoroutine = false;
-
-    protected bool isInProgress = false;
-
-    protected bool belongsSpecialAttackBranch = false;
-    protected BlackBoard blackBoard => GameManager.Instance.blackBoard;
-    protected BossX bossX => blackBoard.GetValue("BossX",out BossX bossX) ? bossX : null;
-    protected PlayerController playerController => 
-        blackBoard.GetValue("PlayerController", out PlayerController playerController) ? playerController : null;
+    protected BossX bossX => blackBoard.GetValue("BossX", out BossX bossX) ? bossX : null;
 
 }
-public class Condition : MainStrategyForBossX, IStrategy
+public class CloseRangeAttackStrategyForBossX : MainStrategyForBossX, IStrategy
 {
-    Func<bool> condition { get; set; }
-
-    public Condition(Func<bool> condition)
-    {
-        this.condition = condition;
-    }
-    public Node.NodeStatus Evaluate() 
-    {
-
-        Debug.Log("Condition" + condition());
-        if (condition())
-        {
-            return Node.NodeStatus.SUCCESS;
-        }
-        else
-        {
-            Debug.Log("Failure");
-            return Node.NodeStatus.FAILURE;
-        }
-    } 
-    
-}
-public class StayStillStrategy : MainStrategyForBossX, IStrategy
-{
-    public Node.NodeStatus Evaluate()
-    {
-
-        Debug.Log("StayStill");
-        bossX.rb.velocity = new Vector3(0, bossX.rb.velocity.y);
-        return Node.NodeStatus.SUCCESS; 
-    }
-
-}
-
-public class ChasePlayerStrategy : MainStrategyForBossX, IStrategy
-{
-    int chaseSpeed = 4;
-    public Node.NodeStatus Evaluate()
-    {
-        Debug.Log("Chase Player");
-        bossX.rb.velocity = new Vector2(bossX.direction.x * chaseSpeed,bossX.rb.velocity.y);
-        return Node.NodeStatus.SUCCESS;
-
-    }
-    
-}
-
-public class CloseRangeAttackStrategy : MainStrategyForBossX, IStrategy
-{
-    public CloseRangeAttackStrategy(bool isBelong)
+    public CloseRangeAttackStrategyForBossX(bool isBelong = false)
     {
         belongsSpecialAttackBranch = isBelong;
     }
@@ -81,11 +25,11 @@ public class CloseRangeAttackStrategy : MainStrategyForBossX, IStrategy
             bossX.isInCloseRangeAttack = true;
 
         }
-        AnimatorStateInfo stateInfo = bossX.bossXAnim.GetCurrentAnimatorStateInfo(0);
+        AnimatorStateInfo stateInfo = bossX.bossAnim.GetCurrentAnimatorStateInfo(0);
 
         if (stateInfo.IsName("CloseRangeAttack"))
         {
-            
+
             if (stateInfo.normalizedTime >= 1f)
             {
                 bossX.isInCloseRangeAttack = false;
@@ -109,9 +53,9 @@ public class CloseRangeAttackStrategy : MainStrategyForBossX, IStrategy
     }
 }
 
-public class LongRangeAttackStrategy : MainStrategyForBossX, IStrategy
+public class LongRangeAttackStrategyForBossX : MainStrategyForBossX, IStrategy
 {
-    public LongRangeAttackStrategy(bool isBelong)
+    public LongRangeAttackStrategyForBossX(bool isBelong)
     {
         belongsSpecialAttackBranch = isBelong;
     }
@@ -122,11 +66,11 @@ public class LongRangeAttackStrategy : MainStrategyForBossX, IStrategy
         if (!bossX.isInLongRangeAttack)
         {
             bossX.isInLongRangeAttack = true;
-            
+
         }
 
 
-        AnimatorStateInfo stateInfo = bossX.bossXAnim.GetCurrentAnimatorStateInfo(0);
+        AnimatorStateInfo stateInfo = bossX.bossAnim.GetCurrentAnimatorStateInfo(0);
 
         if (stateInfo.IsName("LongRangeAttack"))
         {
@@ -140,7 +84,7 @@ public class LongRangeAttackStrategy : MainStrategyForBossX, IStrategy
             }
             else
             {
-               return Node.NodeStatus.RUNNING;
+                return Node.NodeStatus.RUNNING;
             }
         }
         else
@@ -148,7 +92,7 @@ public class LongRangeAttackStrategy : MainStrategyForBossX, IStrategy
             return Node.NodeStatus.RUNNING;
         }
 
-       
+
     }
 }
 
@@ -320,7 +264,7 @@ public class DashAttackStrategy : MainStrategyForBossX, IStrategy
         if (distance < 4f)
         {
             bossX.rb.velocity = new Vector2(0, bossX.rb.velocity.y);
-            bossX.bossXAnim.SetTrigger("attackAfterDash");
+            bossX.bossAnim.SetTrigger("attackAfterDash");
             isDashReady = false;
             bossX.isStanceReady = false;
             return;
@@ -331,7 +275,7 @@ public class DashAttackStrategy : MainStrategyForBossX, IStrategy
 
     private void GetAnimationClip()
     {
-        RuntimeAnimatorController controller = bossX.bossXAnim.runtimeAnimatorController;
+        RuntimeAnimatorController controller = bossX.bossAnim.runtimeAnimatorController;
         
         foreach(var clip in controller.animationClips)
         {

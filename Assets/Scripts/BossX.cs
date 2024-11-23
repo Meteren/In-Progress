@@ -3,23 +3,11 @@ using Cinemachine;
 using System.Collections;
 using UnityEngine;
 
-public class BossX : MonoBehaviour
+public class BossX : Boss
 {
     
     [SerializeField] private GameObject panel;
-    
-    private PlayerController playerController 
-        => GameManager.instance.blackBoard.GetValue("PlayerController", out PlayerController _controller) ? _controller : null;
-    [SerializeField] private LayerMask ground;
-    [SerializeField] private LayerMask bossXLayer;
-    public SpriteRenderer bossXRenderer;
 
-    public Animator bossXAnim;
-
-    public Vector2 direction;
-
-    public float xVelocity;
-    public float yVelocity;
     public float duration;
 
     [Header("Dialogue States")] 
@@ -34,9 +22,7 @@ public class BossX : MonoBehaviour
     public bool inCharacterDeathToSayIsReady = false;
 
     [Header("Conditions")]
-    public bool isFacingLeft = true;
-    public bool isInCloseRangeAttack = false;
-    public bool isInLongRangeAttack = false;
+    
     public bool isJumped;
     public bool canAttack;
     public bool isDashReady = false;
@@ -46,7 +32,6 @@ public class BossX : MonoBehaviour
     public bool isDashAttackInProgress = false;
     public bool isUpThere = false;
     public bool onLand = false;
-    public bool isDead = false;
     public bool canAvatarDie = false;
     public bool increaseProbOfDashAttack = false;
     public bool initBossXSequence = false;
@@ -64,14 +49,6 @@ public class BossX : MonoBehaviour
     [HideInInspector] public float probOfSpecialTwoAttack;
     [HideInInspector] public float probOfDashAttack;
 
-    [Header("Rb")]
-    public Rigidbody2D rb;
-
-    AdvancedStateMachine dialogueStateMachine;
-
-    BehaviourTree bossXBehaviourTree;
-
-    BlackBoard blackBoard;
 
     [SerializeField] private float distanceToGround;
     [SerializeField] private float distanceToRight;
@@ -84,8 +61,6 @@ public class BossX : MonoBehaviour
     public Transform downPoint;
     public Transform offsetWayPoint;
 
-    float distanceToPlayer => Vector2.Distance(transform.position, playerController.transform.position);
-
     float bossXDistanceToLeftWayPoint => Vector2.Distance(transform.position, wayPointLeft.transform.position);
     float bossXDistanceToRightWayPoint => Vector2.Distance(transform.position, wayPointRight.transform.position);
 
@@ -95,10 +70,6 @@ public class BossX : MonoBehaviour
     public float defaultGravity;
     public ParticleSystem groundImpactParticle;
     
-    [Header("Health")] 
-    public BossXHealthBar bossXHealthBar;
-    public float currentHealth;
-    public float maxHealth = 100;
 
     [Header("Dialogues")]
     [SerializeField] private DialogueContainer firstEncounter;
@@ -111,17 +82,14 @@ public class BossX : MonoBehaviour
     {
         
         currentHealth = maxHealth;
-        bossXHealthBar.SetMaxHealth(maxHealth);
+        bossHealthBar.SetMaxHealth(maxHealth);
         
         defaultGravity = rb.gravityScale;
         IgnoreCollision();
 
-        blackBoard = GameManager.instance.blackBoard;
-
         blackBoard.SetValue("BossX", this);
 
-        bossXBehaviourTree = new BehaviourTree("BossXBehaviourTree");
-        dialogueStateMachine = new AdvancedStateMachine();
+        InitBehaviourTree();
 
         SortedSelectorNode mainSelector = new SortedSelectorNode("MainSelector");
         SortedSelectorNode selectJumpType = new SortedSelectorNode("SelectJumpType");
@@ -177,13 +145,13 @@ public class BossX : MonoBehaviour
         SortedSelectorNode selectNormalAttacks = new SortedSelectorNode("SelectNormalAttacks", 10);
         SequenceNode chaseSequence = new SequenceNode("ChaseSequence", 20);
 
-        Leaf stayStillStrategy = new Leaf("StayStill", new StayStillStrategy(), 30);
+        Leaf stayStillStrategy = new Leaf("StayStill", new StayStillStrategy(this), 30);
         Leaf chaseCondition = new Leaf("ChaseCondition", new Condition(() => !firstEncounterReady));
-        Leaf chasePlayerStrategy = new Leaf("ChasePlayerStrategy", new ChasePlayerStrategy());
+        Leaf chasePlayerStrategy = new Leaf("ChasePlayerStrategy", new ChasePlayerStrategy(this,4));
         Leaf closeRangeAttackCondition = new Leaf("AttackOneCondition", new Condition(() =>
                     distanceToPlayer < 2.4f && !isInCloseRangeAttack));
-        Leaf normalCloseRangeAttackStrategy = new Leaf("NormalCloseRangeAttackStrategy", new CloseRangeAttackStrategy(false));
-        Leaf specialCloseRangeAttackStrategy = new Leaf("SpecialCloseRangeAttackStrategy", new CloseRangeAttackStrategy(true));
+        Leaf normalCloseRangeAttackStrategy = new Leaf("NormalCloseRangeAttackStrategy", new CloseRangeAttackStrategyForBossX(false));
+        Leaf specialCloseRangeAttackStrategy = new Leaf("SpecialCloseRangeAttackStrategy", new CloseRangeAttackStrategyForBossX(true));
         
         Leaf randomLongRangeAttackCondition = new Leaf("LongeRangeAttackCondition", new Condition(() =>
         {
@@ -194,8 +162,8 @@ public class BossX : MonoBehaviour
 
         Leaf longRangeAttackCondition = new Leaf("LongeRangeAttackCondition", new Condition(() => (distanceToPlayer > 2.4f && distanceToPlayer < 5.6f)));
 
-        Leaf normalLongRangeAttackStrategy = new Leaf("NormalLongRangeAttackStrategy", new LongRangeAttackStrategy(false));
-        Leaf specialLongRangeAttackStrategy = new Leaf("SpecialLongRangeAttackStrategy", new LongRangeAttackStrategy(true));
+        Leaf normalLongRangeAttackStrategy = new Leaf("NormalLongRangeAttackStrategy", new LongRangeAttackStrategyForBossX(false));
+        Leaf specialLongRangeAttackStrategy = new Leaf("SpecialLongRangeAttackStrategy", new LongRangeAttackStrategyForBossX(true));
 
         Leaf specialDashAttackStrategy = new Leaf("AttackAfterDashStrategy", new DashAttackStrategy(true));
 
@@ -301,7 +269,7 @@ public class BossX : MonoBehaviour
         mainSelector.AddChild(stayStillStrategy);
        
         //BossX Behaviour Tree
-        bossXBehaviourTree.AddChild(mainSelector);
+        bossBehaviourTree.AddChild(mainSelector);
 
         var noDialogState = new NoDialogueState(this, panel);
         var firstEncaounterToSay = new FirstEncounterToSay(this, firstEncounter, panel);
@@ -337,14 +305,10 @@ public class BossX : MonoBehaviour
     private void CollisionDetection()
     {
         //isJumped = !Physics2D.Raycast(transform.position, Vector2.down,distanceToGround,ground);
-        isUpThere = Physics2D.Raycast(upPoint.position, Vector2.left, distanceToLeft, bossXLayer) ||
-            Physics2D.Raycast(upPoint.position, Vector2.right, distanceToRight, bossXLayer);
+        isUpThere = Physics2D.Raycast(upPoint.position, Vector2.left, distanceToLeft, bossLayer) ||
+            Physics2D.Raycast(upPoint.position, Vector2.right, distanceToRight, bossLayer);
     }
 
-    private void IgnoreCollision()
-    {
-        Physics2D.IgnoreLayerCollision(playerController.gameObject.layer, gameObject.layer);
-    }
 
     private void At(IState from, IState to, IPredicate condition)
     {
@@ -353,7 +317,7 @@ public class BossX : MonoBehaviour
 
     private void FixedUpdate()
     {
-        bossXBehaviourTree.Process();
+        bossBehaviourTree.Process();
         CollisionDetection();
     }
     private void Update()
@@ -398,10 +362,10 @@ public class BossX : MonoBehaviour
 
         Debug.Log("special two ready:" + specialTwoCoroutineBlocker);
 
-        if (!bossXAnim.GetCurrentAnimatorStateInfo(0).IsName("CloseRangeAttack")
-            && !bossXAnim.GetCurrentAnimatorStateInfo(0).IsName("LongRangeAttack")
-            && !bossXAnim.GetCurrentAnimatorStateInfo(0).IsName("AttackAfterDash")
-            && !bossXAnim.GetCurrentAnimatorStateInfo(0).IsName("OnLand") && !isDead)
+        if (!bossAnim.GetCurrentAnimatorStateInfo(0).IsName("CloseRangeAttack")
+            && !bossAnim.GetCurrentAnimatorStateInfo(0).IsName("LongRangeAttack")
+            && !bossAnim.GetCurrentAnimatorStateInfo(0).IsName("AttackAfterDash")
+            && !bossAnim.GetCurrentAnimatorStateInfo(0).IsName("OnLand") && !isDead)
             SetRotation();
 
         xVelocity = rb.velocity.x;
@@ -409,39 +373,18 @@ public class BossX : MonoBehaviour
             dialogueStateMachine.Update();
         AnimationController();
     }
-    private void AnimationController()
+    public override void AnimationController()
     {
-        bossXAnim.SetFloat("xVelocity", xVelocity);
-        bossXAnim.SetFloat("yVelocity", yVelocity);
+        bossAnim.SetFloat("xVelocity", xVelocity);
+        bossAnim.SetFloat("yVelocity", yVelocity);
 
-        bossXAnim.SetBool("isJumped", isJumped);
-        bossXAnim.SetBool("isStanceReady", isStanceReady);
-        bossXAnim.SetBool("isInLongRangeAttack", isInLongRangeAttack);
-        bossXAnim.SetBool("isInCloseRangeAttack", isInCloseRangeAttack);
-        bossXAnim.SetBool("onLand", onLand);
-        bossXAnim.SetBool("isDead", isDead);
-        bossXAnim.SetBool("inSpecialTwo", inSpecialTwo);
-    }
-
-    private void SetRotation()
-    {
-        if (direction.x < 0 && !isFacingLeft)
-        {
-            transform.rotation = Quaternion.Euler(0, 180, 0);
-            isFacingLeft = true;
-        }
-
-        if (direction.x > 0 && isFacingLeft)
-        {
-            transform.rotation = Quaternion.Euler(0, 0, 0);
-            isFacingLeft = false;
-        }
-    }
-
-    public void SetDireaction()
-    {
-        direction = (playerController.transform.position - transform.position).normalized;
-        
+        bossAnim.SetBool("isJumped", isJumped);
+        bossAnim.SetBool("isStanceReady", isStanceReady);
+        bossAnim.SetBool("isInLongRangeAttack", isInLongRangeAttack);
+        bossAnim.SetBool("isInCloseRangeAttack", isInCloseRangeAttack);
+        bossAnim.SetBool("onLand", onLand);
+        bossAnim.SetBool("isDead", isDead);
+        bossAnim.SetBool("inSpecialTwo", inSpecialTwo);
     }
 
     public void StartShakingCamera()
@@ -511,17 +454,21 @@ public class BossX : MonoBehaviour
         }
     }
 
-    public void OnDamage(float damageAmount)
+    public override void OnDamage(float damageAmount)
     {
         currentHealth -= damageAmount;
-        bossXHealthBar.SetCurrentHealth(currentHealth);
-
+        bossHealthBar.SetCurrentHealth(currentHealth);
     }
 
-    public float InflictDamage()
+    public override float InflictDamage()
     {
         float inflictedDamage = 10f;
         return inflictedDamage;
+    }
+
+    public override void InitBehaviourTree()
+    {
+        bossBehaviourTree = new BehaviourTree("BossXBehaviourTree");
     }
 
 }

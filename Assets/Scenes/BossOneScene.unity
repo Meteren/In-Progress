@@ -5828,7 +5828,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -470080479
-  m_SortingLayer: -1
+  m_SortingLayer: -2
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -6832,7 +6832,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -470080479
-  m_SortingLayer: -1
+  m_SortingLayer: -2
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -18776,7 +18776,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1983357486}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0}
+  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
   m_LocalPosition: {x: 5.35, y: -2.44, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -18795,7 +18795,7 @@ Transform:
   - {fileID: 1552919597}
   - {fileID: 1682369852}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
 --- !u!114 &1983357490
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18808,18 +18808,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3891f2715d912fd48b303b9e9d7b8a32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panel: {fileID: 1585917077}
   ground:
     serializedVersion: 2
     m_Bits: 8
-  bossXLayer:
+  bossLayer:
     serializedVersion: 2
     m_Bits: 128
-  bossXRenderer: {fileID: 1983357488}
-  bossXAnim: {fileID: 1983357487}
+  bossRenderer: {fileID: 1983357488}
+  bossAnim: {fileID: 1983357487}
   direction: {x: 0, y: 0}
   xVelocity: 0
   yVelocity: 0
+  bossHealthBar: {fileID: 1468342871}
+  currentHealth: 0
+  maxHealth: 100
+  rb: {fileID: 1983357493}
+  isDead: 0
+  isFacingLeft: 1
+  panel: {fileID: 1585917077}
   duration: 0
   specialOneProgressed: 0
   specialTwoProgressed: 0
@@ -18830,7 +18836,6 @@ MonoBehaviour:
   inSpecialTwoToSayIsReady: 0
   inDeathToSayIsReady: 0
   inCharacterDeathToSayIsReady: 0
-  isFacingLeft: 1
   isInCloseRangeAttack: 0
   isInLongRangeAttack: 0
   isJumped: 0
@@ -18842,7 +18847,6 @@ MonoBehaviour:
   isDashAttackInProgress: 0
   isUpThere: 0
   onLand: 0
-  isDead: 0
   canAvatarDie: 0
   increaseProbOfDashAttack: 0
   initBossXSequence: 0
@@ -18855,7 +18859,6 @@ MonoBehaviour:
   probOfSpecialOneAttack: 0
   probOfSpecialTwoAttack: 0
   probOfDashAttack: 0
-  rb: {fileID: 1983357493}
   distanceToGround: 1.88
   distanceToRight: 9.1
   distanceToLeft: 9.09
@@ -18866,9 +18869,6 @@ MonoBehaviour:
   offsetWayPoint: {fileID: 200273726}
   defaultGravity: 0
   groundImpactParticle: {fileID: 1548066014}
-  bossXHealthBar: {fileID: 1468342871}
-  currentHealth: 0
-  maxHealth: 100
   firstEncounter: {fileID: 11400000, guid: 7d4a486b731eeee4fa11bb69da7313c4, type: 2}
   inSepcialOneToSay: {fileID: 11400000, guid: b60af34bddb0b054e9f75e4ce3cb77d8, type: 2}
   inSpecialTwoToSay: {fileID: 11400000, guid: 46923812c510a0045acb185d713bdc50, type: 2}
@@ -19672,7 +19672,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -470080479
-  m_SortingLayer: -1
+  m_SortingLayer: -2
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -19785,7 +19785,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -470080479
-  m_SortingLayer: -1
+  m_SortingLayer: -2
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
