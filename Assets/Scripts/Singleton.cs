@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SingleTon<T> : MonoBehaviour where T : Component
 {
@@ -38,7 +39,8 @@ public class SingleTon<T> : MonoBehaviour where T : Component
         if(instance == null)
         {
             instance = this as T;
-            DontDestroyOnLoad(gameObject);
+            if(SceneManager.GetActiveScene().buildIndex == 0)
+                DontDestroyOnLoad(gameObject);
         }
         else
         {

@@ -14,7 +14,9 @@ public class GameManager : SingleTon<GameManager>
    
     private void Start()
     {
-        SceneManager.sceneLoaded += ReadyInsantiations; 
+        //SceneManager.sceneLoaded += ReadyInsantiations;
+        ObjectPooling.SetupPool("FireBall", objectToInstantiate);
+        ObjectPooling.SetupPool("HitParticle", hitParticle);
     }
 
     private void ReadyInsantiations(Scene scene, LoadSceneMode mode)

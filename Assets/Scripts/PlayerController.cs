@@ -1,6 +1,7 @@
 using UnityEngine;
 using AdvancedStateHandling;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 
 public class PlayerController : MonoBehaviour
@@ -41,6 +42,8 @@ public class PlayerController : MonoBehaviour
     public bool isOnJumper;
     public bool knockBack;
     public bool canMove = true;
+    public bool interaction = false;
+    public bool canAttack = false;
 
     [Header("Collision Detection Segment")]
     public bool freeToGetUp;
@@ -67,14 +70,14 @@ public class PlayerController : MonoBehaviour
     BlackBoard blackBoard;
     void Start()
     {
-        DontDestroyOnLoad(this);
+        //DontDestroyOnLoad(this);
         currentHealth = maxHealth;
 
-        if(SceneManager.GetActiveScene().buildIndex != 0)
+        /*if(SceneManager.GetActiveScene().buildIndex != 0)
         {
             playerHealthBar = GameObject.Find("Canvas").transform.Find("Player HealthBar").GetComponent<PlayerHealthBar>();
             playerHealthBar.SetMaxHealth(maxHealth);
-        }
+        }*/
 
         blackBoard = GameManager.Instance.blackBoard;
 
@@ -100,6 +103,7 @@ public class PlayerController : MonoBehaviour
         var afterStepOnJumper = new AfterStepOnJumperState(this);
         var knockBackState = new KnockBackState(this);
         var stayStillState = new StayStillState(this);
+        var attackState = new AttackState(this);
 
         At(moveState, fallState, new FuncPredicate(() => isJumped));
         At(afterDoubleJumpFallState, rollState, new FuncPredicate(() => canRoll && rb.velocity.y == 0));
@@ -118,6 +122,7 @@ public class PlayerController : MonoBehaviour
         At(fallState, doubleJumpState, new FuncPredicate(() => doubleJumped));
         At(doubleJumpState, ledgeGrabState, new FuncPredicate(() => ledgeDetected));
         At(doubleJumpState, afterDoubleJumpFallState, new FuncPredicate(() => rb.velocity.y < 0));
+        At(doubleJumpState, moveState, new FuncPredicate(() => rb.velocity.y == 0));
         At(afterDoubleJumpFallState, moveState, new FuncPredicate(() => !isJumped && rb.velocity.y == 0));
         At(afterDoubleJumpFallState, ledgeGrabState, new FuncPredicate(() => ledgeDetected));
         At(rollState, moveState, new FuncPredicate(() => !canRoll));
@@ -128,6 +133,11 @@ public class PlayerController : MonoBehaviour
         At(doubleJumpState, dashState, new FuncPredicate(() => isInDash && !dashInCoolDown));
         At(dashState, moveState, new FuncPredicate(() => !isJumped && !isInDash));
         At(dashState, afterDoubleJumpFallState, new FuncPredicate(() => isJumped && rb.velocity.y < 0 && !isInDash));
+        At(moveState, attackState, new FuncPredicate(() => canAttack && interaction));
+        At(jumpState, attackState, new FuncPredicate(() => canAttack && interaction));
+        At(fallState, attackState, new FuncPredicate(() => canAttack && interaction));
+        At(afterDoubleJumpFallState, attackState, new FuncPredicate(() => canAttack && interaction));
+        At(attackState, moveState, new FuncPredicate(() => !canAttack));
 
         Any(damageState, new FuncPredicate(() => isDamaged && !isDead));
         At(damageState, afterDoubleJumpFallState, new FuncPredicate(() => !isDamaged && rb.velocity.y < 0));
@@ -230,6 +240,7 @@ public class PlayerController : MonoBehaviour
         playerAnimController.SetBool("isDead", isDead);
         playerAnimController.SetBool("isOnJumper", isOnJumper);
         playerAnimController.SetBool("knockBack", knockBack);
+        playerAnimController.SetBool("attack", canAttack);
 
         
     }

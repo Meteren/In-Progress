@@ -40,8 +40,10 @@ public class JumpState : BasePlayerState
         
         if(Input.GetKeyDown(KeyCode.Space))
             controller.doubleJumped = true;
-        if(Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
+        if(Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex != 0 && !controller.dashInCoolDown)
             controller.isInDash = true;
+        if (Input.GetKeyDown(KeyCode.V) && controller.interaction)
+            controller.canAttack = true;
       
     }
 }
@@ -93,8 +95,10 @@ public class MoveState : BasePlayerState
                 controller.isInDash = true;
             }
         }
-       
-            
+        if (Input.GetKeyDown(KeyCode.V) && controller.interaction)
+            controller.canAttack = true;
+
+
     }
 
 }
@@ -180,10 +184,13 @@ public class FallState : BasePlayerState
         }
         
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex != 0 && !controller.dashInCoolDown)
         {
             controller.isInDash = true;
         }
+
+        if (Input.GetKeyDown(KeyCode.V) && controller.interaction)
+            controller.canAttack = true;
 
         if (Input.GetKeyDown(KeyCode.Space) && !controller.doubleJumped)
             controller.doubleJumped = true;
@@ -286,11 +293,14 @@ public class DoubleJumpState : BasePlayerState
         {
             controller.rb.velocity = new Vector2(moveSpeed, controller.rb.velocity.y);
         }
-        if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex != 0 && !controller.dashInCoolDown)
         {
             controller.isInDash = true;
         }
+        if (Input.GetKeyDown(KeyCode.V) && controller.interaction)
+            controller.canAttack = true;
     }
+
 }
 
 public class AfterDoubleJumpFallState : BasePlayerState
@@ -324,10 +334,13 @@ public class AfterDoubleJumpFallState : BasePlayerState
             controller.rb.velocity = new Vector2(moveSpeed, controller.rb.velocity.y);
         }
        
-        if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex == 1 && !controller.dashInCoolDown)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && SceneManager.GetActiveScene().buildIndex != 0 && !controller.dashInCoolDown)
         {
             controller.isInDash = true;
         }
+
+        if (Input.GetKeyDown(KeyCode.V) && controller.interaction)
+            controller.canAttack = true;
 
     }
 
@@ -684,6 +697,35 @@ public class StayStillState : BasePlayerState
         {
             controller.canMove = true;
         }
+    }
+}
+
+public class AttackState : BasePlayerState
+{
+    AnimatorStateInfo animatorStateInfo;
+    public AttackState(PlayerController controller) : base(controller)
+    {
+    }
+
+    public override void OnStart()
+    {
+        base.OnStart();
+        controller.rb.velocity = new Vector2(0, controller.rb.velocity.y);
+    }
+
+    public override void OnExit()
+    {
+        base.OnExit();
+    }
+
+    public override void Update()
+    {
+        //base.Update();
+        animatorStateInfo = controller.playerAnimController.GetCurrentAnimatorStateInfo(0);
+
+        if (animatorStateInfo.IsName("combat"))
+            if (animatorStateInfo.normalizedTime >= 1)
+                controller.canAttack = false;
     }
 }
 
