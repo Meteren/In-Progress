@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Point : MonoBehaviour
 {
-    [SerializeField] private float radius;
+    public float radius;
 
     private void OnDrawGizmos()
     {

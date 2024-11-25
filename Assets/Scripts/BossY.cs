@@ -1,13 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BossY : Boss
 {
-
+    
     public bool firstToSay = false;
     public Vector3 previousLocation;
-    
+    [Header("Prefab")]
+    [SerializeField] private SummonedSpirit referenceSpirit;
+    public Transform centerPoint;
     void Start()
     {
         InitBehaviourTree();
@@ -84,7 +87,22 @@ public class BossY : Boss
 
         if (Input.GetKeyDown(KeyCode.B))
             firstToSay = true;
+       
         AnimationController();
+
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            float angle = 0;
+            float incrementAmount = 45;
+            for(int i = 0; i < 8; i++)
+            {
+                SummonedSpirit defenseSpirit = Instantiate(referenceSpirit);
+                SummonedSpirit offenseSpirit = Instantiate(referenceSpirit);
+                defenseSpirit.Init(centerPoint, angle * Mathf.Deg2Rad,centerPoint.GetComponent<WayPoint>().radius,false);
+                offenseSpirit.Init(centerPoint, angle * Mathf.Deg2Rad, 0, true);
+                angle += incrementAmount;
+            }
+        }
     }
 
     public override void AnimationController()

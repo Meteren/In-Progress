@@ -64,6 +64,7 @@ public class MoveState : BasePlayerState
     public override void OnExit()
     {
         base.OnExit();
+       
     }
 
     public override void Update()
@@ -93,6 +94,7 @@ public class MoveState : BasePlayerState
             if(SceneManager.GetActiveScene().buildIndex != 0 && !controller.dashInCoolDown)
             {
                 controller.isInDash = true;
+                controller.dashParticles.Play();
             }
         }
         if (Input.GetKeyDown(KeyCode.V) && controller.interaction)

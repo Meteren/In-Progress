@@ -73,11 +73,11 @@ public class PlayerController : MonoBehaviour
         //DontDestroyOnLoad(this);
         currentHealth = maxHealth;
 
-        if(SceneManager.GetActiveScene().buildIndex != 0)
+        /*if(SceneManager.GetActiveScene().buildIndex != 0)
         {
             playerHealthBar = GameObject.Find("Canvas").transform.Find("Player HealthBar").GetComponent<PlayerHealthBar>();
             playerHealthBar.SetMaxHealth(maxHealth);
-        }
+        }*/
 
         blackBoard = GameManager.Instance.blackBoard;
 
