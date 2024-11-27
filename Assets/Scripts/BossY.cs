@@ -1,3 +1,4 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,9 +24,11 @@ public class BossY : Boss
 
     float probabilityOfSpecialOne;
 
+    public Gun gun;
 
     public Queue<SummonedSpirit> offenseSpirits = new Queue<SummonedSpirit>();
     public List<SummonedSpirit> defenseSpirits = new List<SummonedSpirit>();
+    public CinemachineVirtualCamera wideCam;
 
     [Header("Points")]
     [SerializeField] private Transform specialPoint;
@@ -33,6 +36,8 @@ public class BossY : Boss
     [SerializeField] private Transform patrolLineTwo;
     public Transform centerPoint;
     public Transform focusPoint;
+    public Transform upperPoint;
+    public List<Transform> gunPoints;
 
     Transform closestPatrolPointToPlayer =>
         Vector2.Distance(playerController.transform.position, patrolLineOne.transform.position) >
@@ -41,6 +46,9 @@ public class BossY : Boss
     Transform farestPatrolPointToPlayer => 
         Vector2.Distance(playerController.transform.position, patrolLineOne.transform.position) >
         Vector2.Distance(playerController.transform.position, patrolLineTwo.transform.position) ? patrolLineOne : patrolLineTwo;
+
+    public CinemachineBasicMultiChannelPerlin wideChannel =>
+        GameManager.instance.blackBoard.GetValue("WideChannel", out CinemachineBasicMultiChannelPerlin _channel) ? _channel : null;
 
     [Header("Prefab")]
     public SummonedSpirit referenceSpirit;
@@ -101,7 +109,7 @@ public class BossY : Boss
 
         SequenceNode processSpecialAttackOneSequence = new SequenceNode("ProcessSpecialAttackOneSequence");
 
-        Leaf moveToSpecialPointStrategy = new Leaf("MoveToSpecialPointStrategy", new MoveToPointStrategy(specialPoint,13f));
+        Leaf moveToSpecialPointStrategy = new Leaf("MoveToSpecialPointStrategy", new MoveToPointStrategy(specialPoint,13f,false));
         Leaf setAttachedSpiritsAroundStrategy = new Leaf("SetAttachedSpiritsAroundStrategy", new SetAttachedSpiritsAroundStrategy());
         Leaf shootSpiritStrategy = new Leaf("ShootSpiritStrategy", new ShootSpiritsStrategy());
 
@@ -117,7 +125,7 @@ public class BossY : Boss
 
         SequenceNode endingOneSequence = new SequenceNode("EndingOneSequence", 10);
         Leaf moveToClosestPatrolPointToPlayerStrategy = new Leaf("MoveToClosestPatrolPointToPlayerStrategy",
-           new MoveToPointStrategy(closestPatrolPointToPlayer, 13f), 20);
+           new MoveToPointStrategy(closestPatrolPointToPlayer, 13f,false), 20);
 
 
         selectEndingSituation.AddChild(endingOneSequence);
@@ -135,10 +143,10 @@ public class BossY : Boss
         endingOneSequence.AddChild(endingOneCondition);
         endingOneSequence.AddChild(processEndingOneSequence);
 
-        Leaf moveToPlayerStrategy = new Leaf("MoveToPlayerStrategy", new MoveToPointStrategy(focusPoint, 24f));
+        Leaf moveToPlayerStrategy = new Leaf("MoveToPlayerStrategy", new MoveToPointStrategy(focusPoint, 24f,false));
         Leaf needleAttackStrategy = new Leaf("NeedleAttackStrategy", new NeedleAttackStrategy());
         Leaf moveToFarestPatrolPoint = new Leaf("MoveToFarestPatrolPoint",
-            new MoveToPointStrategy(farestPatrolPointToPlayer,13f));
+            new MoveToPointStrategy(farestPatrolPointToPlayer,13f,false));
 
         processEndingOneSequence.AddChild(moveToPlayerStrategy);
         processEndingOneSequence.AddChild(needleAttackStrategy);
@@ -236,5 +244,12 @@ public class BossY : Boss
        
     }
 
-    
+    public IEnumerator ShakeWideCamera()
+    {    
+        wideChannel.m_AmplitudeGain = 2.5f;
+        yield return new WaitForSeconds(0.5f);
+        wideChannel.m_AmplitudeGain = 0;
+    }
+
+
 }

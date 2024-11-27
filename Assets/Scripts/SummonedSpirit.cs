@@ -15,7 +15,7 @@ public class SummonedSpirit : MonoBehaviour
 
     public bool isOffenseSpirit;
     bool isFacingLeft = true;
-    public bool idle = false;
+    public bool idle;
     public bool canMoveTo = false;
     public bool activateOrbitalMove;
     public bool activateChase;
@@ -39,6 +39,7 @@ public class SummonedSpirit : MonoBehaviour
             spiritStateMachine.Update();
         SetDirection(currentDirection);
         SetRotation();
+        AnimationController();
     }
 
     public void Init(Transform centerPoint, float angle, float radius,bool isOffenseSpirit,bool isAttached, Collider2D generationFrame)

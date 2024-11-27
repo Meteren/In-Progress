@@ -1,7 +1,5 @@
 using Cinemachine;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.XR;
 
 public class Gun : MonoBehaviour
 {
@@ -14,16 +12,43 @@ public class Gun : MonoBehaviour
     [SerializeField] private ParticleSystem gunParticle;
     float timer = 0.4f;
     bool isTimerInProgress = false;
+    public bool isBelongToPlayer = true;
+    bool isPositionSetted = true;
     [SerializeField] private ParticleSystem gunExplosionEffect;
     private CinemachineBasicMultiChannelPerlin channel =>
         GameManager.instance.blackBoard.GetValue("Channel", out CinemachineBasicMultiChannelPerlin _channel) ? _channel : null;
 
+    float rePositioningSpeed = 7f; 
     void Update()
     {
         if (!controller.isDead)
         {
-            HandleGunRotation();
-            Shoot();
+            if (isBelongToPlayer)
+            {
+                if (!isPositionSetted)
+                {
+                    transform.position = 
+                        Vector2.MoveTowards(transform.position, controller.transform.position, Time.deltaTime * rePositioningSpeed);
+                    if(Vector2.Distance(controller.transform.position,transform.position) <= offset)
+                    {
+                        isPositionSetted = true;
+                    }
+
+                }
+                else
+                {
+
+                    HandleGunRotation();
+                    if (Input.GetKeyDown(KeyCode.Mouse0))
+                    {
+                        Shoot();
+                    }
+                }
+
+
+            }
+           
+            
         }
         else
         {  
@@ -53,18 +78,17 @@ public class Gun : MonoBehaviour
         transform.position = controller.transform.position + Quaternion.Euler(0, 0, angle + 90) * new Vector3(offset, 0, 0);
     }
 
-    private void Shoot()
+    public void Shoot()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            isTimerInProgress = true;
-            channel.m_AmplitudeGain = 0;
-            timer = 0.4f;
-            channel.m_AmplitudeGain = 2.5f;
-            gunParticle.Play();
-            FireBall fireBall = ObjectPooling.DequeuePool<FireBall>("FireBall");
-            fireBall.Initiliaze(transform.position, direction, angle);
-        }
+       
+        isTimerInProgress = true;
+        channel.m_AmplitudeGain = 0;
+        timer = 0.4f;
+        channel.m_AmplitudeGain = 2.5f;
+        gunParticle.Play();
+        FireBall fireBall = ObjectPooling.DequeuePool<FireBall>("FireBall");
+        fireBall.Initiliaze(transform.position, direction, angle);
+        
     }
 
    

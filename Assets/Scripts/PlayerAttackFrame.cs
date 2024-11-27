@@ -10,6 +10,7 @@ public class PlayerAttackFrame : MonoBehaviour
         if(collision.TryGetComponent<IDamageable>(out IDamageable damageableObject))
         {
             damageableObject.OnDamage();
+            GetComponentInParent<PlayerController>().punched = true;
         }
     }
 }

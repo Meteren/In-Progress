@@ -20,6 +20,7 @@ public class SpawnState : BaseSummonedSpiritState
     public override void OnExit()
     {
         base.OnExit();
+        spirit.idle = true;
     }
 
     public override void Update()
@@ -43,11 +44,12 @@ public class SpawnState : BaseSummonedSpiritState
                     return;
 
                 }
-                    
+
+
                 if (spirit.isAttached)
                 {
                     spirit.activateOrbitalMove = true;
-                    spirit.idle = true;
+                    
                 }
                 else
                 {

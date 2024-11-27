@@ -1,5 +1,8 @@
 
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public abstract class MainStrategyForBossY : MainBossStrategy
@@ -94,7 +97,6 @@ public class LongRangeAttackStrategyForBossY : MainStrategyForBossY, IStrategy
     }
 }
 
-
 public class GetCloseStrategy : MainStrategyForBossY, IStrategy
 {
     float force = 4f;
@@ -149,15 +151,18 @@ public class MoveToPointStrategy : MainStrategyForBossY, IStrategy
     float howFar = 0.1f;
     bool speedSetted = false;
     bool positionSpotted = false;
+    bool isMovingUp = false;
     float distance => Vector2.Distance(bossY.transform.position, movePosition);
-    public MoveToPointStrategy(Transform pointToMove,float speed)
+    public MoveToPointStrategy(Transform pointToMove,float speed, bool isMovingUp)
     {
         this.pointToMove = pointToMove;
         this.speed = speed;
+        this.isMovingUp = isMovingUp;
     }
     public Node.NodeStatus Evaluate()
     {
         Debug.Log("MoveToPoint");
+
         if (!speedSetted)
         {
             bossY.rb.velocity = Vector2.zero;
@@ -350,3 +355,219 @@ public class NeedleAttackStrategy : MainStrategyForBossY, IStrategy
         }
     }
 }
+
+public class GetGunAndMoveUpStrategy : MainStrategyForBossY, IStrategy
+{
+    GameObject lockingPosition;
+    float gunDistanceFromBossy = 3f;
+    float gunFollowSpeed = 6f;
+    float bossYDistanceFromUpperPoint = 0.1f;
+    float bossYMoveSpeed = 9f;
+
+
+    bool isCollisionIgnored = false;
+    bool lockGunPosition;
+    public Node.NodeStatus Evaluate()
+    {
+        if (!isCollisionIgnored)
+        {
+            HandleCollision(true);
+            isCollisionIgnored = true;
+            bossY.wideCam.Priority = 11;
+        }
+
+        if (Vector2.Distance(bossY.transform.position, bossY.upperPoint.transform.position) >= bossYDistanceFromUpperPoint)
+        {
+            bossY.transform.position =
+                Vector2.MoveTowards(bossY.transform.position, bossY.upperPoint.transform.position, Time.deltaTime * bossYMoveSpeed);
+        }
+        else
+        {
+            if(lockingPosition.transform.IsChildOf(bossY.transform))
+            {
+                lockingPosition.transform.SetParent(null);
+                HandleCollision(false);
+                isCollisionIgnored = false;
+                lockGunPosition = false;
+                return Node.NodeStatus.SUCCESS;
+            }
+        }
+
+        if (!lockGunPosition)
+        {
+            bossY.gun.isBelongToPlayer = false;
+            bossY.gun.transform.position =
+                        Vector2.MoveTowards(bossY.gun.transform.position, bossY.transform.position, Time.deltaTime * gunFollowSpeed);
+            if (Vector2.Distance(bossY.gun.transform.position, bossY.transform.position) <= gunDistanceFromBossy)
+            {
+                lockingPosition = lockingPosition is null ? new GameObject("LockingPosition") : lockingPosition;
+                Vector2 lockedPositionOfGun = bossY.gun.transform.position;
+                lockingPosition.transform.position = lockedPositionOfGun;
+                lockingPosition.transform.SetParent(bossY.transform);
+                lockGunPosition = true; 
+            }
+        }
+        else
+        {
+            bossY.gun.transform.position = lockingPosition.transform.position;
+        }
+
+
+        return Node.NodeStatus.RUNNING;
+    }
+
+    private void HandleCollision(bool activate)
+    {
+        
+        Physics2D.IgnoreLayerCollision(bossY.gameObject.layer, bossY.gun.gameObject.layer,activate);
+       
+    }
+}
+
+public class SendGunToPointAndRotate : MainStrategyForBossY, IStrategy
+{
+    Transform randomGunPoint;
+    bool isPointSelected = false;
+    float gunMoveSpeed = 7f;
+    float gunDistandeFromPoint = 0.1f;
+    float angle;
+
+    float gunRotationSpeed = 2f;
+
+    public Node.NodeStatus Evaluate()
+    {
+        if (!isPointSelected)
+        {
+            randomGunPoint = bossY.gunPoints[Random.Range(0, bossY.gunPoints.Count)];
+            angle = bossY.transform.rotation.eulerAngles.z;
+            isPointSelected = true;
+        }
+
+        if (Vector2.Distance(bossY.gun.transform.position, randomGunPoint.transform.position) > 0.1f)
+        {
+           
+            if(angle < 0)
+            {
+                bossY.transform.rotation = Quaternion.Euler(0, 0, angle);
+                angle -= Time.deltaTime * gunMoveSpeed;
+                if(angle > 0)
+                {
+                    isPointSelected = false;
+                    bossY.transform.rotation = Quaternion.Euler(0, 0, 180);
+                    return Node.NodeStatus.SUCCESS;
+                }
+                return Node.NodeStatus.RUNNING;
+            }
+            if(angle > 0)
+            {
+                bossY.transform.rotation = Quaternion.Euler(0, 0, angle);
+                angle += Time.deltaTime * gunMoveSpeed;
+                if (angle > 0)
+                {
+                    isPointSelected = false;
+                    bossY.transform.rotation = Quaternion.Euler(0, 0, 180);
+                    return Node.NodeStatus.SUCCESS;
+                }
+                return Node.NodeStatus.RUNNING;
+            }
+            else
+            {
+                isPointSelected = false;
+                return Node.NodeStatus.SUCCESS;
+            }  
+        }
+        else
+        {
+            bossY.gun.transform.position =
+                Vector2.MoveTowards(bossY.gun.transform.position, randomGunPoint.transform.position, Time.deltaTime * gunMoveSpeed);
+            return Node.NodeStatus.RUNNING;
+        }
+    }
+
+}
+
+public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
+{
+    List<Transform> positionsToMoves => 
+        bossY.gunPoints.Where(point => Vector2.Distance(point.transform.position, bossY.gun.transform.position) <  0.1f).ToList();
+    Transform choosedPosition;
+    float secondsToWaitShooting = 0.4f;
+    float gunMoveSpeed = 7f;
+    float distance = 0.1f;
+    int random => Random.Range(0, positionsToMoves.Count);
+
+    bool canMove = true;
+    bool isInShoot = false;
+    bool positionSetted = false;
+    bool initShooting = true;
+    bool canShoot = false;
+    public Node.NodeStatus Evaluate()
+    {
+        if (initShooting)
+        {
+            isInShoot = true;
+            initShooting = false;
+            canMove = false;
+            bossY.gun.Shoot();
+            bossY.ShakeWideCamera();
+            bossY.StartCoroutine(WaitShooting());
+
+        }
+
+        if (playerController.punched)
+        {
+            ResetNode();
+            return Node.NodeStatus.SUCCESS;
+        }
+
+        if (canMove)
+        {   
+            if (!positionSetted)
+            {
+                choosedPosition = positionsToMoves[random];
+                positionSetted = true;
+            }
+            bossY.gun.transform.position = 
+                Vector2.MoveTowards(bossY.gun.transform.position, choosedPosition.transform.position, Time.deltaTime * gunMoveSpeed);
+            if(Vector2.Distance(bossY.gun.transform.position,choosedPosition.transform.position) < distance)
+            {
+                canMove = false;
+                canShoot = true;
+                positionSetted = false;
+            }
+        }
+
+        if (canShoot)
+        {
+            if (!isInShoot)
+            {
+                isInShoot = true;
+                bossY.gun.Shoot();
+                bossY.StartCoroutine(WaitShooting());
+            }
+
+        }
+
+        return Node.NodeStatus.RUNNING;
+    }
+
+    private void ResetNode()
+    {
+        bossY.gun.isBelongToPlayer = true;
+        canMove = true;
+        isInShoot = false;
+        positionSetted = false;
+        playerController.punched = false;
+        initShooting= true;
+        canShoot = false;
+    }
+
+    private IEnumerator WaitShooting()
+    {
+        yield return new WaitForSeconds(secondsToWaitShooting);
+        isInShoot = false;
+        canMove = true;
+        canShoot = false;
+    }
+}
+
