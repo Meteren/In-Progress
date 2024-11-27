@@ -14,7 +14,6 @@ public class SpawnState : BaseSummonedSpiritState
     public override void OnStart()
     {
         base.OnStart();
-        Debug.Log("Spawn Point" + spawnPoint);
         spirit.transform.position = spawnPoint;
        
     }
@@ -91,6 +90,7 @@ public class OrbitalMoveState : BaseSummonedSpiritState
     public override void OnExit()
     {
         base.OnExit();
+        spirit.activateOrbitalMove = false;
     }
 
     public override void Update()
@@ -107,7 +107,22 @@ public class OrbitalMoveState : BaseSummonedSpiritState
         }
                    
         Move();
-        
+
+        if (!spirit.isAttached)
+        {
+            if (spirit.selectRandomPos)
+            {
+                spirit.moveToPointState.PositionToMove = spirit.GenerateRandomPosition();
+                spirit.canMoveTo = true;
+
+            }
+            else
+            {
+                spirit.activateChase = true;
+            }
+ 
+        }
+                
     }
 
     private void Move()
@@ -186,6 +201,7 @@ public class MoveToPointState : BaseSummonedSpiritState
 
         if(Vector2.Distance(spirit.transform.position, positionToMove) <= distance)
         {
+
             if (spirit.isOffenseSpirit)
             {
                 spirit.activateOrbitalMove = true;
@@ -198,4 +214,29 @@ public class MoveToPointState : BaseSummonedSpiritState
         }
        
     }
+}
+
+public class ChaseState : BaseSummonedSpiritState
+{
+    float chaseSpeed = 10f;
+    public ChaseState(SummonedSpirit spirit) : base(spirit)
+    {
+    }
+    public override void OnStart()
+    {
+        base.OnStart();
+        
+    }
+    public override void OnExit()
+    {
+        base.OnExit();
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        spirit.rb.velocity = spirit.playerDirection * chaseSpeed;
+        
+    }
+
 }

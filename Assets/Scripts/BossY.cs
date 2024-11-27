@@ -1,16 +1,49 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class BossY : Boss
 {
-    
     public bool firstToSay = false;
+    public bool activateSpecialOne = false;
+    public bool activateSkill;
+    public bool summonAttack;
+    public bool canSummon;
+    public bool blockSpecialOneCoroutine = false;
+
+    new public float distanceToPlayer =>
+        Vector2.Distance(new Vector2(playerController.transform.position.x, 0), new Vector2(transform.position.x, 0)); 
+    
     public Vector3 previousLocation;
-    [Header("Prefab")]
-    [SerializeField] private SummonedSpirit referenceSpirit;
+    
+    
+    public Collider2D generationFrame;
+
+    float probabilityOfSpecialOne;
+
+
+    public Queue<SummonedSpirit> offenseSpirits = new Queue<SummonedSpirit>();
+    public List<SummonedSpirit> defenseSpirits = new List<SummonedSpirit>();
+
+    [Header("Points")]
+    [SerializeField] private Transform specialPoint;
+    [SerializeField] private Transform patrolLineOne;
+    [SerializeField] private Transform patrolLineTwo;
     public Transform centerPoint;
+    public Transform focusPoint;
+
+    Transform closestPatrolPointToPlayer =>
+        Vector2.Distance(playerController.transform.position, patrolLineOne.transform.position) >
+        Vector2.Distance(playerController.transform.position, patrolLineTwo.transform.position) ? patrolLineTwo : patrolLineOne;
+
+    Transform farestPatrolPointToPlayer => 
+        Vector2.Distance(playerController.transform.position, patrolLineOne.transform.position) >
+        Vector2.Distance(playerController.transform.position, patrolLineTwo.transform.position) ? patrolLineOne : patrolLineTwo;
+
+    [Header("Prefab")]
+    public SummonedSpirit referenceSpirit;
     void Start()
     {
         InitBehaviourTree();
@@ -33,14 +66,14 @@ public class BossY : Boss
         //long range attack
         SequenceNode longRangeAttackSequence = new SequenceNode("LongRangeAttackSequence",10);
         Leaf longRangeAttackCondition = new Leaf("LongRangeAttackCondition", new Condition(
-            () => distanceToPlayer < 2.8f && distanceToPlayer > 2f ));
+            () => distanceToPlayer <= 2.8f && distanceToPlayer > 2f ));
         Leaf longRangeAttackStrategy = new Leaf("LongRangeAttackStrategy", new LongRangeAttackStrategyForBossY());
         longRangeAttackSequence.AddChild(longRangeAttackCondition);
         longRangeAttackSequence.AddChild(longRangeAttackStrategy);
         //close range attack
         SequenceNode closeRangeAttackSequence = new SequenceNode("CloseRangeAttackSequence",20);
         Leaf closeRangeAttackCondition = new Leaf("closeRangeAttackCondition", new Condition(
-           () => distanceToPlayer < 2f));
+           () => distanceToPlayer <= 2f));
         Leaf closeRangeAttackStrategy = new Leaf("LongRangeAttackStrategy", new CloseRangeAttackStrategyForBossY());
         closeRangeAttackSequence.AddChild(closeRangeAttackCondition);
         closeRangeAttackSequence.AddChild(closeRangeAttackStrategy);
@@ -51,6 +84,67 @@ public class BossY : Boss
             => distanceToPlayer < 5f && distanceToPlayer > 2.8f));
         Leaf getCloseStrategy = new Leaf("GetCloseStrategy", new GetCloseStrategy());
         Leaf getAwayStrategy = new Leaf("GetAwayStrategy", new GetAwayStrategy());
+
+        //special one
+        SortedSelectorNode specialAttackSelector = new SortedSelectorNode("SpecialAttackSelector",10);
+        SequenceNode specialAttackOneSequence = new SequenceNode("SpecialAttackOneSequence");
+
+        specialAttackSelector.AddChild(specialAttackOneSequence);
+
+        Leaf specialOneCondition = new Leaf("SpecialOneCondition",new Condition(() =>
+        {
+            if(!blockSpecialOneCoroutine)
+                StartCoroutine(SpecialOneProbability());
+
+            return probabilityOfSpecialOne >= 78;
+        }));
+
+        SequenceNode processSpecialAttackOneSequence = new SequenceNode("ProcessSpecialAttackOneSequence");
+
+        Leaf moveToSpecialPointStrategy = new Leaf("MoveToSpecialPointStrategy", new MoveToPointStrategy(specialPoint,13f));
+        Leaf setAttachedSpiritsAroundStrategy = new Leaf("SetAttachedSpiritsAroundStrategy", new SetAttachedSpiritsAroundStrategy());
+        Leaf shootSpiritStrategy = new Leaf("ShootSpiritStrategy", new ShootSpiritsStrategy());
+
+        processSpecialAttackOneSequence.AddChild(moveToSpecialPointStrategy);
+        processSpecialAttackOneSequence.AddChild(setAttachedSpiritsAroundStrategy);
+        processSpecialAttackOneSequence.AddChild(shootSpiritStrategy);
+
+        SortedSelectorNode selectEndingSituation = new SortedSelectorNode("SelectEndingSituation");
+
+        specialAttackOneSequence.AddChild(specialOneCondition);
+        specialAttackOneSequence.AddChild(processSpecialAttackOneSequence);
+        specialAttackOneSequence.AddChild(selectEndingSituation);
+
+        SequenceNode endingOneSequence = new SequenceNode("EndingOneSequence", 10);
+        Leaf moveToClosestPatrolPointToPlayerStrategy = new Leaf("MoveToClosestPatrolPointToPlayerStrategy",
+           new MoveToPointStrategy(closestPatrolPointToPlayer, 13f), 20);
+
+
+        selectEndingSituation.AddChild(endingOneSequence);
+        selectEndingSituation.AddChild(moveToClosestPatrolPointToPlayerStrategy);
+
+
+        Leaf endingOneCondition = new Leaf("EndingOneCondition", new Condition(() =>
+        {   
+            int randomNumber = Random.Range(0, 100);
+            return randomNumber >= 40;
+        }));
+
+        SequenceNode processEndingOneSequence = new SequenceNode("ProcessEndingOneSequence");
+
+        endingOneSequence.AddChild(endingOneCondition);
+        endingOneSequence.AddChild(processEndingOneSequence);
+
+        Leaf moveToPlayerStrategy = new Leaf("MoveToPlayerStrategy", new MoveToPointStrategy(focusPoint, 24f));
+        Leaf needleAttackStrategy = new Leaf("NeedleAttackStrategy", new NeedleAttackStrategy());
+        Leaf moveToFarestPatrolPoint = new Leaf("MoveToFarestPatrolPoint",
+            new MoveToPointStrategy(farestPatrolPointToPlayer,13f));
+
+        processEndingOneSequence.AddChild(moveToPlayerStrategy);
+        processEndingOneSequence.AddChild(needleAttackStrategy);
+        processEndingOneSequence.AddChild(moveToFarestPatrolPoint);
+
+        //Addings
 
         specialLRASequence.AddChild(specialLRACondition);
         specialLRASequence.AddChild(getCloseStrategy);
@@ -63,7 +157,8 @@ public class BossY : Boss
         attackSelector.AddChild(longRangeAttackSequence);
         attackSelector.AddChild(closeRangeAttackSequence);
 
-
+        //main selector
+        mainSelector.AddChild(specialAttackSelector);
         mainSelector.AddChild(attackSelector);
         mainSelector.AddChild(chaseSequence);
         mainSelector.AddChild(stayStillStrategy);
@@ -81,6 +176,7 @@ public class BossY : Boss
     void Update()
     {
         SetDireaction();
+        ListenSpirits();
         if (!bossAnim.GetCurrentAnimatorStateInfo(0).IsName("CloseRangeAttack")
             && !bossAnim.GetCurrentAnimatorStateInfo(0).IsName("LongRangeAttack"))
             SetRotation();
@@ -89,26 +185,17 @@ public class BossY : Boss
             firstToSay = true;
        
         AnimationController();
-
-        if (Input.GetKeyDown(KeyCode.O))
-        {
-            float angle = 0;
-            float incrementAmount = 45;
-            for(int i = 0; i < 8; i++)
-            {
-                SummonedSpirit defenseSpirit = Instantiate(referenceSpirit);
-                SummonedSpirit offenseSpirit = Instantiate(referenceSpirit);
-                defenseSpirit.Init(centerPoint, angle * Mathf.Deg2Rad,centerPoint.GetComponent<WayPoint>().radius,false);
-                offenseSpirit.Init(centerPoint, angle * Mathf.Deg2Rad, 0, true);
-                angle += incrementAmount;
-            }
-        }
+        Debug.Log("player distance " + distanceToPlayer);
+  
     }
 
     public override void AnimationController()
     {
         bossAnim.SetBool("isInLongRangeAttack", isInLongRangeAttack);
         bossAnim.SetBool("isInCloseRangeAttack", isInCloseRangeAttack);
+        bossAnim.SetBool("activateSkill", activateSkill);
+        bossAnim.SetBool("summonAttack", summonAttack);
+        bossAnim.SetBool("canSummon", canSummon);
     }
 
     public override float InflictDamage()
@@ -124,6 +211,29 @@ public class BossY : Boss
     public override void OnDamage(float damageAmount)
     {
         throw new System.NotImplementedException();
+    }
+
+
+    public IEnumerator SpecialOneProbability()
+    {
+        probabilityOfSpecialOne = Random.Range(0, 100);
+        blockSpecialOneCoroutine = true;
+        yield return new WaitForSeconds(1f);
+        blockSpecialOneCoroutine = false;
+        
+
+    }
+
+    private void ListenSpirits()
+    {
+        Queue<SummonedSpirit> tempOffenseQueue = 
+            new Queue<SummonedSpirit>(offenseSpirits.Where(spirit => !spirit.IsDestroyed()));
+
+        List<SummonedSpirit> tempDefenseQueue = new List<SummonedSpirit>(defenseSpirits.Where(spirit => !spirit.IsDestroyed()));
+
+        offenseSpirits = tempOffenseQueue;
+        defenseSpirits = tempDefenseQueue;
+       
     }
 
     
