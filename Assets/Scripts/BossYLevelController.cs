@@ -10,27 +10,29 @@ public class BossYLevelController : MonoBehaviour
     [SerializeField] private List<Transform> sidePlatforms;
     [SerializeField] private CinemachineVirtualCamera cam;
     [SerializeField] private List<Transform> vulnerablePoints;
+    [SerializeField] private BossY bossY;
+    [SerializeField] private Transform topDeadZone;
     public bool platformsReady = false;
     public bool isInReadySituation = false;
-    
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.H) && !isInReadySituation)
-        {
-            platformsReady = !platformsReady;
-            isInReadySituation = true;
-            if (platformsReady)
-                cam.Priority = 11;
-            else
-                cam.Priority = 9;
-            SetMiddlePlatforms();
-            SetSidePlatforms();
-            GenerateOrResetVulnerablePoint();
-            
-        }
-       
-    }
 
+    public void SetPlatforms()
+    {
+        platformsReady = !platformsReady;
+        isInReadySituation = true;
+        if (platformsReady)
+        {   
+            topDeadZone.GetComponent<Collider2D>().enabled = false;
+        }
+        else
+        {   
+            topDeadZone.GetComponent<Collider2D>().enabled = true;
+        }
+
+        SetMiddlePlatforms();
+        SetSidePlatforms();
+        GenerateOrResetVulnerablePoint();
+
+    }
     private void SetMiddlePlatforms()
     {
         foreach(var platform in middlePlatforms)
@@ -146,8 +148,8 @@ public class BossYLevelController : MonoBehaviour
                 platform.GetComponentInChildren<VulnerablePoint>().isVulnerable = false;
             }
  
-        }
+        }   
        
-
     }
+    
 }

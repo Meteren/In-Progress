@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class VulnerablePoint : Point, IDamageable
 {
+    public bool isVulnerable {
+        get; set; }
 
-    public bool isVulnerable;
-    
     public void OnDamage()
     {
         if (isVulnerable)

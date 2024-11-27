@@ -4,5 +4,6 @@ using UnityEngine;
 
 public interface IDamageable
 {
+    bool isVulnerable { get; set; }
     void OnDamage();
 }

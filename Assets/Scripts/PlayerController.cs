@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviour
     public bool canMove = true;
     public bool interaction = false;
     public bool canAttack = false;
-    public bool punched;
+    public bool punched = false;
 
     [Header("Collision Detection Segment")]
     public bool freeToGetUp;

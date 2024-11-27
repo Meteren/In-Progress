@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 public abstract class MainStrategyForBossY : MainBossStrategy
@@ -359,21 +358,21 @@ public class NeedleAttackStrategy : MainStrategyForBossY, IStrategy
 public class GetGunAndMoveUpStrategy : MainStrategyForBossY, IStrategy
 {
     GameObject lockingPosition;
-    float gunDistanceFromBossy = 3f;
-    float gunFollowSpeed = 6f;
+    float gunDistanceFromBossy = 1f;
+    float gunFollowSpeed = 15f;
     float bossYDistanceFromUpperPoint = 0.1f;
-    float bossYMoveSpeed = 9f;
-
+    float bossYMoveSpeed = 17f;
 
     bool isCollisionIgnored = false;
     bool lockGunPosition;
     public Node.NodeStatus Evaluate()
     {
+        Debug.Log("GetGunAndMoveUpStrategy");
         if (!isCollisionIgnored)
         {
             HandleCollision(true);
-            isCollisionIgnored = true;
             bossY.wideCam.Priority = 11;
+            isCollisionIgnored = true;
         }
 
         if (Vector2.Distance(bossY.transform.position, bossY.upperPoint.transform.position) >= bossYDistanceFromUpperPoint)
@@ -383,19 +382,25 @@ public class GetGunAndMoveUpStrategy : MainStrategyForBossY, IStrategy
         }
         else
         {
-            if(lockingPosition.transform.IsChildOf(bossY.transform))
+            if(lockingPosition is not null)
             {
-                lockingPosition.transform.SetParent(null);
-                HandleCollision(false);
-                isCollisionIgnored = false;
-                lockGunPosition = false;
-                return Node.NodeStatus.SUCCESS;
+                if (lockingPosition.transform.IsChildOf(bossY.transform))
+                {
+                    lockingPosition.transform.SetParent(null);
+                    HandleCollision(false);
+                    isCollisionIgnored = false;
+                    lockGunPosition = false;
+                    return Node.NodeStatus.SUCCESS;
+                }
             }
+            
         }
 
         if (!lockGunPosition)
         {
             bossY.gun.isBelongToPlayer = false;
+            bossY.gun.isPositionSetted = false;
+
             bossY.gun.transform.position =
                         Vector2.MoveTowards(bossY.gun.transform.position, bossY.transform.position, Time.deltaTime * gunFollowSpeed);
             if (Vector2.Distance(bossY.gun.transform.position, bossY.transform.position) <= gunDistanceFromBossy)
@@ -419,62 +424,66 @@ public class GetGunAndMoveUpStrategy : MainStrategyForBossY, IStrategy
     private void HandleCollision(bool activate)
     {
         
-        Physics2D.IgnoreLayerCollision(bossY.gameObject.layer, bossY.gun.gameObject.layer,activate);
+        Physics2D.IgnoreLayerCollision(bossY.gameObject.layer, LayerMask.NameToLayer("Ground"),activate);
        
     }
 }
 
-public class SendGunToPointAndRotate : MainStrategyForBossY, IStrategy
+public class SendGunToPointAndRotateStrategy : MainStrategyForBossY, IStrategy
 {
     Transform randomGunPoint;
     bool isPointSelected = false;
     float gunMoveSpeed = 7f;
-    float gunDistandeFromPoint = 0.1f;
+    float gunDistanceFromPoint = 0.1f;
     float angle;
 
-    float gunRotationSpeed = 2f;
+    float gunRotationSpeed = 200f;
 
     public Node.NodeStatus Evaluate()
     {
+        Debug.Log("SendGunToPointAndRotateStrategy");
         if (!isPointSelected)
         {
+            bossY.levelController.SetPlatforms();
             randomGunPoint = bossY.gunPoints[Random.Range(0, bossY.gunPoints.Count)];
-            angle = bossY.transform.rotation.eulerAngles.z;
+            angle = bossY.gun.transform.eulerAngles.z % 360;
+            Debug.Log(angle);
             isPointSelected = true;
         }
 
-        if (Vector2.Distance(bossY.gun.transform.position, randomGunPoint.transform.position) > 0.1f)
-        {
-           
-            if(angle < 0)
+        if (Vector2.Distance(bossY.gun.transform.position, randomGunPoint.transform.position) < 0.1f)
+        {   
+            if(angle < 180)
             {
-                bossY.transform.rotation = Quaternion.Euler(0, 0, angle);
-                angle -= Time.deltaTime * gunMoveSpeed;
-                if(angle > 0)
+                bossY.gun.transform.rotation = Quaternion.Euler(0, 0, angle);
+                angle += Time.deltaTime * gunRotationSpeed;
+                if(angle > 180)
                 {
                     isPointSelected = false;
-                    bossY.transform.rotation = Quaternion.Euler(0, 0, 180);
+                    bossY.gun.transform.rotation = Quaternion.Euler(0, 0, 180);
                     return Node.NodeStatus.SUCCESS;
                 }
-                return Node.NodeStatus.RUNNING;
+ 
             }
-            if(angle > 0)
+            if(angle > 180)
             {
-                bossY.transform.rotation = Quaternion.Euler(0, 0, angle);
-                angle += Time.deltaTime * gunMoveSpeed;
-                if (angle > 0)
+                bossY.gun.transform.rotation = Quaternion.Euler(0, 0, angle);
+                angle -= Time.deltaTime * gunRotationSpeed;
+                if (angle < 180)
                 {
                     isPointSelected = false;
-                    bossY.transform.rotation = Quaternion.Euler(0, 0, 180);
+                    bossY.gun.transform.rotation = Quaternion.Euler(0, 0, 180);
                     return Node.NodeStatus.SUCCESS;
                 }
-                return Node.NodeStatus.RUNNING;
+
             }
-            else
+
+            if(angle == 180)
             {
-                isPointSelected = false;
-                return Node.NodeStatus.SUCCESS;
-            }  
+                isPointSelected= false;
+                return Node.NodeStatus.SUCCESS; 
+            }
+            return Node.NodeStatus.RUNNING;
         }
         else
         {
@@ -489,10 +498,10 @@ public class SendGunToPointAndRotate : MainStrategyForBossY, IStrategy
 public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
 {
     List<Transform> positionsToMoves => 
-        bossY.gunPoints.Where(point => Vector2.Distance(point.transform.position, bossY.gun.transform.position) <  0.1f).ToList();
+        bossY.gunPoints.Where(point => Vector2.Distance(point.transform.position, bossY.gun.transform.position) > 0.1f).ToList();
     Transform choosedPosition;
     float secondsToWaitShooting = 0.4f;
-    float gunMoveSpeed = 7f;
+    float gunMoveSpeed = 13f;
     float distance = 0.1f;
     int random => Random.Range(0, positionsToMoves.Count);
 
@@ -503,13 +512,13 @@ public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
     bool canShoot = false;
     public Node.NodeStatus Evaluate()
     {
+        Debug.Log("ChangeGunPositionAndShootStrategy");
         if (initShooting)
         {
             isInShoot = true;
             initShooting = false;
             canMove = false;
-            bossY.gun.Shoot();
-            bossY.ShakeWideCamera();
+            bossY.gun.Shoot(Vector2.down,bossY.gun.transform.eulerAngles.z);
             bossY.StartCoroutine(WaitShooting());
 
         }
@@ -517,6 +526,7 @@ public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
         if (playerController.punched)
         {
             ResetNode();
+            bossY.levelController.SetPlatforms();
             return Node.NodeStatus.SUCCESS;
         }
 
@@ -535,6 +545,7 @@ public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
                 canShoot = true;
                 positionSetted = false;
             }
+            return Node.NodeStatus.RUNNING;
         }
 
         if (canShoot)
@@ -542,10 +553,9 @@ public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
             if (!isInShoot)
             {
                 isInShoot = true;
-                bossY.gun.Shoot();
+                bossY.gun.Shoot(Vector2.down, bossY.gun.transform.eulerAngles.z);
                 bossY.StartCoroutine(WaitShooting());
             }
-
         }
 
         return Node.NodeStatus.RUNNING;
@@ -553,6 +563,8 @@ public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
 
     private void ResetNode()
     {
+        bossY.wideCam.Priority = 9;
+        bossY.isSpecialTwoFinished = true;
         bossY.gun.isBelongToPlayer = true;
         canMove = true;
         isInShoot = false;

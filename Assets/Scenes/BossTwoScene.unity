@@ -360,7 +360,7 @@ GameObject:
   - component: {fileID: 144558846}
   - component: {fileID: 144558848}
   - component: {fileID: 144558847}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5592,7 +5592,7 @@ GameObject:
   - component: {fileID: 189830995}
   - component: {fileID: 189830996}
   - component: {fileID: 189830997}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VulPoint3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5672,7 +5672,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 0.2
-  isVulnerable: 0
 --- !u!1 &230607089
 GameObject:
   m_ObjectHideFlags: 0
@@ -5983,7 +5982,7 @@ GameObject:
   - component: {fileID: 356059308}
   - component: {fileID: 356059307}
   - component: {fileID: 356059306}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11289,7 +11288,7 @@ GameObject:
   - component: {fileID: 616736086}
   - component: {fileID: 616736085}
   - component: {fileID: 616736084}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11447,7 +11446,7 @@ GameObject:
   - component: {fileID: 618717028}
   - component: {fileID: 618717027}
   - component: {fileID: 618717026}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11650,7 +11649,7 @@ GameObject:
   - component: {fileID: 642591982}
   - component: {fileID: 642591981}
   - component: {fileID: 642591980}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform9
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11896,7 +11895,7 @@ GameObject:
   m_Component:
   - component: {fileID: 753988306}
   - component: {fileID: 753988307}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platforms
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -11960,6 +11959,8 @@ MonoBehaviour:
   - {fileID: 1539179504}
   - {fileID: 1370104320}
   - {fileID: 1159049860}
+  bossY: {fileID: 1956297264}
+  topDeadZone: {fileID: 1132815189}
   platformsReady: 0
   isInReadySituation: 0
 --- !u!1 &775393219
@@ -12882,6 +12883,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   offset: 1.16
   gunParticle: {fileID: 1405502104}
+  isBelongToPlayer: 1
+  isPositionSetted: 1
   gunExplosionEffect: {fileID: 188459471}
 --- !u!212 &982335908
 SpriteRenderer:
@@ -13147,8 +13150,8 @@ Transform:
   m_GameObject: {fileID: 1087772894}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.27, y: -6.9, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.06, y: -5.31, z: 0}
+  m_LocalScale: {x: 1.500485, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 945924873}
@@ -13282,8 +13285,8 @@ Transform:
   m_GameObject: {fileID: 1132815188}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.67, y: 7.14, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.67, y: 11.08, z: 0}
+  m_LocalScale: {x: 1.4803, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 945924873}
@@ -13402,7 +13405,7 @@ GameObject:
   - component: {fileID: 1159049863}
   - component: {fileID: 1159049862}
   - component: {fileID: 1159049861}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform11
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14153,7 +14156,7 @@ GameObject:
   - component: {fileID: 1308923760}
   - component: {fileID: 1308923761}
   - component: {fileID: 1308923762}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VulPoint1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14233,7 +14236,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 0.2
-  isVulnerable: 0
 --- !u!1 &1312517911
 GameObject:
   m_ObjectHideFlags: 0
@@ -14590,7 +14592,7 @@ GameObject:
   - component: {fileID: 1370104323}
   - component: {fileID: 1370104322}
   - component: {fileID: 1370104321}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19669,8 +19671,8 @@ Transform:
   m_GameObject: {fileID: 1429920871}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 12.41, y: 0.52, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 14.52, y: 3.26, z: 0}
+  m_LocalScale: {x: 1, y: 1.1551847, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 945924873}
@@ -19743,7 +19745,7 @@ GameObject:
   - component: {fileID: 1488496860}
   - component: {fileID: 1488496861}
   - component: {fileID: 1488496862}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: VulPoint2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19823,7 +19825,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 0.2
-  isVulnerable: 0
 --- !u!1 &1490413844
 GameObject:
   m_ObjectHideFlags: 0
@@ -19926,6 +19927,7 @@ GameObject:
   - component: {fileID: 1509263136}
   - component: {fileID: 1509263135}
   - component: {fileID: 1509263134}
+  - component: {fileID: 1509263137}
   m_Layer: 0
   m_Name: cm
   m_TagString: Untagged
@@ -20009,6 +20011,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1509263137
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1509263132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bb026fafb42b14791938953eaace77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_NoiseProfile: {fileID: 11400000, guid: 69ce8388f6785dd4c8c39915efece2f4, type: 2}
+  m_PivotOffset: {x: 0, y: 0, z: 0}
+  m_AmplitudeGain: 0
+  m_FrequencyGain: 1
+  mNoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &1539179500
 GameObject:
   m_ObjectHideFlags: 0
@@ -20021,7 +20040,7 @@ GameObject:
   - component: {fileID: 1539179503}
   - component: {fileID: 1539179502}
   - component: {fileID: 1539179501}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20225,7 +20244,7 @@ GameObject:
   - component: {fileID: 1570937351}
   - component: {fileID: 1570937350}
   - component: {fileID: 1570937349}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20383,7 +20402,7 @@ GameObject:
   - component: {fileID: 1581384046}
   - component: {fileID: 1581384045}
   - component: {fileID: 1581384044}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -20671,6 +20690,7 @@ MonoBehaviour:
   canMove: 1
   interaction: 0
   canAttack: 0
+  punched: 0
   freeToGetUp: 1
   ground:
     serializedVersion: 2
@@ -20856,7 +20876,7 @@ GameObject:
   - component: {fileID: 1867870105}
   - component: {fileID: 1867870104}
   - component: {fileID: 1867870103}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Platform7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -21382,7 +21402,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1956297260}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -1, z: -0, w: 0}
+  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
   m_LocalPosition: {x: 5.09, y: -1.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -21427,6 +21447,8 @@ MonoBehaviour:
   summonAttack: 0
   canSummon: 0
   blockSpecialOneCoroutine: 0
+  specialTwoReady: 0
+  isSpecialTwoFinished: 0
   previousLocation: {x: 0, y: 0, z: 0}
   generationFrame: {fileID: 606661571}
   gun: {fileID: 982335907}
@@ -21436,7 +21458,25 @@ MonoBehaviour:
   patrolLineTwo: {fileID: 886687709}
   centerPoint: {fileID: 843060309}
   focusPoint: {fileID: 625327387}
+  upperPoint: {fileID: 1068936803}
+  gunPoints:
+  - {fileID: 166360661}
+  - {fileID: 2121323112}
+  - {fileID: 675751046}
+  - {fileID: 654542192}
+  - {fileID: 857251516}
+  - {fileID: 1156731513}
+  - {fileID: 1228463733}
+  - {fileID: 1096460982}
+  - {fileID: 1490413845}
+  - {fileID: 152079082}
+  - {fileID: 1205462637}
+  - {fileID: 849700470}
+  - {fileID: 1491156650}
+  - {fileID: 383454110}
+  wideCam: {fileID: 943606345}
   referenceSpirit: {fileID: 5237631641424804289, guid: 4f49d4cf1a9f92f41a4389910b920216, type: 3}
+  levelController: {fileID: 753988307}
 --- !u!61 &1956297265
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -21611,8 +21651,8 @@ Transform:
   m_GameObject: {fileID: 1988738918}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10.71, y: 0.86, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -12.87, y: 3.49, z: 0}
+  m_LocalScale: {x: 1, y: 1.0877774, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 945924873}

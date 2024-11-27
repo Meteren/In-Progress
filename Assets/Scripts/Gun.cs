@@ -13,12 +13,15 @@ public class Gun : MonoBehaviour
     float timer = 0.4f;
     bool isTimerInProgress = false;
     public bool isBelongToPlayer = true;
-    bool isPositionSetted = true;
+    public bool isPositionSetted = true;
     [SerializeField] private ParticleSystem gunExplosionEffect;
     private CinemachineBasicMultiChannelPerlin channel =>
         GameManager.instance.blackBoard.GetValue("Channel", out CinemachineBasicMultiChannelPerlin _channel) ? _channel : null;
 
-    float rePositioningSpeed = 7f; 
+    private CinemachineBasicMultiChannelPerlin wideChannel
+        => GameManager.Instance.blackBoard.GetValue("WideChannel", out CinemachineBasicMultiChannelPerlin _wideChannel) ? _wideChannel : null;
+
+    float rePositioningSpeed = 14f; 
     void Update()
     {
         if (!controller.isDead)
@@ -64,6 +67,8 @@ public class Gun : MonoBehaviour
         if (timer <= 0)
         {
             channel.m_AmplitudeGain = 0f;
+            if(wideChannel is not null)
+                wideChannel.m_AmplitudeGain = 0f;
             timer = 0.4f;
             isTimerInProgress = false;
         }
@@ -89,6 +94,17 @@ public class Gun : MonoBehaviour
         FireBall fireBall = ObjectPooling.DequeuePool<FireBall>("FireBall");
         fireBall.Initiliaze(transform.position, direction, angle);
         
+    }
+
+    public void Shoot(Vector2 direction, float angle)
+    {
+        isTimerInProgress = true;
+        wideChannel.m_AmplitudeGain = 0;
+        timer = 0.4f;
+        wideChannel.m_AmplitudeGain = 2.5f;
+        gunParticle.Play();
+        FireBall fireBall = ObjectPooling.DequeuePool<FireBall>("FireBall");
+        fireBall.Initiliaze(transform.position, direction, angle);
     }
 
    

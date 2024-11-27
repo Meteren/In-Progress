@@ -13,13 +13,14 @@ public class BossY : Boss
     public bool summonAttack;
     public bool canSummon;
     public bool blockSpecialOneCoroutine = false;
+    public bool specialTwoReady = false;
+    public bool isSpecialTwoFinished = false;
 
     new public float distanceToPlayer =>
         Vector2.Distance(new Vector2(playerController.transform.position.x, 0), new Vector2(transform.position.x, 0)); 
     
     public Vector3 previousLocation;
-    
-    
+     
     public Collider2D generationFrame;
 
     float probabilityOfSpecialOne;
@@ -28,7 +29,6 @@ public class BossY : Boss
 
     public Queue<SummonedSpirit> offenseSpirits = new Queue<SummonedSpirit>();
     public List<SummonedSpirit> defenseSpirits = new List<SummonedSpirit>();
-    public CinemachineVirtualCamera wideCam;
 
     [Header("Points")]
     [SerializeField] private Transform specialPoint;
@@ -50,8 +50,13 @@ public class BossY : Boss
     public CinemachineBasicMultiChannelPerlin wideChannel =>
         GameManager.instance.blackBoard.GetValue("WideChannel", out CinemachineBasicMultiChannelPerlin _channel) ? _channel : null;
 
+    public CinemachineVirtualCamera wideCam;
+
     [Header("Prefab")]
     public SummonedSpirit referenceSpirit;
+
+    [Header("Level Controller")]
+    public BossYLevelController levelController;
     void Start()
     {
         InitBehaviourTree();
@@ -95,16 +100,14 @@ public class BossY : Boss
 
         //special one
         SortedSelectorNode specialAttackSelector = new SortedSelectorNode("SpecialAttackSelector",10);
-        SequenceNode specialAttackOneSequence = new SequenceNode("SpecialAttackOneSequence");
-
-        specialAttackSelector.AddChild(specialAttackOneSequence);
+        SequenceNode specialAttackOneSequence = new SequenceNode("SpecialAttackOneSequence",20);
 
         Leaf specialOneCondition = new Leaf("SpecialOneCondition",new Condition(() =>
         {
             if(!blockSpecialOneCoroutine)
                 StartCoroutine(SpecialOneProbability());
 
-            return probabilityOfSpecialOne >= 78;
+            return probabilityOfSpecialOne >= 85;
         }));
 
         SequenceNode processSpecialAttackOneSequence = new SequenceNode("ProcessSpecialAttackOneSequence");
@@ -152,7 +155,31 @@ public class BossY : Boss
         processEndingOneSequence.AddChild(needleAttackStrategy);
         processEndingOneSequence.AddChild(moveToFarestPatrolPoint);
 
+        //special two
+        SequenceNode specialAttackTwoSequence = new SequenceNode("SpecialAttackTwoSequence",10);
+
+        Leaf specialAttackTwoCondition = new Leaf("SpecialAttackTwoCondition",new Condition(() => specialTwoReady));
+
+        specialAttackTwoSequence.AddChild(specialAttackTwoCondition);
+
+        SequenceNode processSpecialTwoSequence = new SequenceNode("ProcessSpecialTwoSequence");
+
+        specialAttackTwoSequence.AddChild(processSpecialTwoSequence);
+
+        Leaf getGunAndMoveUpStrategy = new Leaf("GetGunAndMoveUpStrategy", new GetGunAndMoveUpStrategy());
+        Leaf sendGunToPointAndRotateStrategy = new Leaf("SendGunToPointAndRotateStrategy",new SendGunToPointAndRotateStrategy());
+        Leaf changeGunPositionAndShootStrategy = new Leaf("ChangeGunPositionAndShootStrategy", new ChangeGunPositionAndShootStrategy());
+        Leaf moveToClosestWayPointFasterStrategy =
+            new Leaf("MoveToClosestWayPointFasterStrategy", new MoveToPointStrategy(closestPatrolPointToPlayer, 20f,false));
+
+        processSpecialTwoSequence.AddChild(getGunAndMoveUpStrategy);
+        processSpecialTwoSequence.AddChild(sendGunToPointAndRotateStrategy);
+        processSpecialTwoSequence.AddChild(changeGunPositionAndShootStrategy);
+        processSpecialTwoSequence.AddChild(moveToClosestWayPointFasterStrategy);
+
         //Addings
+        specialAttackSelector.AddChild(specialAttackTwoSequence);
+        specialAttackSelector.AddChild(specialAttackOneSequence);
 
         specialLRASequence.AddChild(specialLRACondition);
         specialLRASequence.AddChild(getCloseStrategy);
@@ -171,7 +198,6 @@ public class BossY : Boss
         mainSelector.AddChild(chaseSequence);
         mainSelector.AddChild(stayStillStrategy);
         
-
         bossBehaviourTree.AddChild(mainSelector);
     }
 
@@ -193,7 +219,11 @@ public class BossY : Boss
             firstToSay = true;
        
         AnimationController();
-        Debug.Log("player distance " + distanceToPlayer);
+
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            specialTwoReady = !specialTwoReady;
+        }
   
     }
 
@@ -220,7 +250,6 @@ public class BossY : Boss
     {
         throw new System.NotImplementedException();
     }
-
 
     public IEnumerator SpecialOneProbability()
     {

@@ -1,6 +1,4 @@
 using Cinemachine;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class WideCam : MonoBehaviour
@@ -10,7 +8,7 @@ public class WideCam : MonoBehaviour
     {
         wideCam = GetComponent<CinemachineVirtualCamera>();
         CinemachineBasicMultiChannelPerlin wideChannel = wideCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
-        GameManager.instance.blackBoard.SetValue("WideChannel", wideCam);
+        GameManager.instance.blackBoard.SetValue("WideChannel", wideChannel);
     }
 
 }
