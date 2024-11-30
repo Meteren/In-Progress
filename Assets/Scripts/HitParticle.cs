@@ -5,7 +5,7 @@ public class HitParticle : MonoBehaviour
     [SerializeField] private ParticleSystem hitParticle;
     float duration;
     float hitRenderTime;
-    SpriteRenderer bossXRenderer;
+    SpriteRenderer bossRenderer;
     bool isTakeDamageInProgress = false;
     float startingTime;
     float finishingTime;
@@ -15,18 +15,22 @@ public class HitParticle : MonoBehaviour
         hitRenderTime = duration - 0.1f;
     }
 
-    public void Init(Vector2 direction,Vector2 position,SpriteRenderer bossXRenderer)
+    public void Init(Vector2 direction,Vector2 position,SpriteRenderer bossRenderer  = null)
     {
         startingTime = Time.time;
         finishingTime = startingTime + hitRenderTime;
-        this.bossXRenderer = bossXRenderer;
+        
         float angle = Mathf.Atan2(direction.y,direction.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0,0,angle);
         transform.position = position;
         gameObject.SetActive(true);
-        hitParticle.Play(); 
+        hitParticle.Play();
+        if (bossRenderer != null)
+        {
+            this.bossRenderer = bossRenderer;
+            bossRenderer.color = Color.red;
+        }
         
-        bossXRenderer.color = Color.red;  
        
         
     }
@@ -34,10 +38,13 @@ public class HitParticle : MonoBehaviour
     void Update()
     {
         duration -= Time.deltaTime;
-        if(duration < hitRenderTime && !isTakeDamageInProgress)
-        { 
-           bossXRenderer.color = Color.white;
-           isTakeDamageInProgress = true;
+        if(bossRenderer != null)
+        {
+            if (duration < hitRenderTime && !isTakeDamageInProgress)
+            {
+                bossRenderer.color = Color.white;
+                isTakeDamageInProgress = true;
+            }
         }
 
         if(duration <= 0)

@@ -131,13 +131,25 @@ public class SummonedSpirit : MonoBehaviour
         return new Vector2(x, y);
     }
 
+    private float InflictDamage()
+    {
+        return 3f;
+    }
+
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.layer == LayerMask.NameToLayer("Player"))
+        if(collision.gameObject.TryGetComponent<PlayerController>(out PlayerController controller))
         {
-            Debug.Log("SMASHH!!!");
-            Destroy(gameObject);
+            if (!controller.isInDash && !controller.isDead )
+            {
+                controller.isDamaged = true;
+                controller.damageDirection = currentDirection;
+                controller.OnDamage(InflictDamage());
+
+                Destroy(gameObject);
+            }
+            
         }
     }
 

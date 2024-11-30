@@ -226,6 +226,8 @@ public class LedgeGrabState : BasePlayerState
     public override void OnExit()
     {
         base.OnExit();
+        controller.rb.gravityScale = 2;
+        controller.ledgeDetected = false;
         Debug.Log("LedgeGrab Exit");
     }
 
@@ -432,7 +434,6 @@ public class DashState : BasePlayerState
 
 public class DamageState : BasePlayerState
 {
-    BossX bossX => GameManager.instance.blackBoard.GetValue("BossX", out BossX _bossX) ? _bossX : null;
     float yForce = 7f;
     float xForce = 7f;
     float timer = 0.1f;
@@ -446,7 +447,7 @@ public class DamageState : BasePlayerState
         Debug.Log("Damage Start");
         base.OnStart();
         controller.rb.velocity = Vector2.zero;
-        controller.rb.AddForce(new Vector2(bossX.direction.x * xForce, yForce), ForceMode2D.Impulse);
+        controller.rb.AddForce(new Vector2(controller.damageDirection.x * xForce, controller.damageDirection.x == 0 ? 2f : yForce), ForceMode2D.Impulse);
         controller.StartCoroutine(TimeToStay());
         controller.StartCoroutine(SlowTime());
     }
@@ -483,7 +484,7 @@ public class DamageState : BasePlayerState
 
     private IEnumerator TimeToStay()
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.2f);
         controller.isDamaged = false;
     }
 
@@ -510,7 +511,6 @@ public class DamageState : BasePlayerState
 
 public class DeathState : BasePlayerState
 {
-    BossX bossX => GameManager.instance.blackBoard.GetValue("BossX", out BossX _bossX) ? _bossX : null;
     bool blockCoroutine = false;
   
     float airForce = 10f;
@@ -526,11 +526,11 @@ public class DeathState : BasePlayerState
         controller.rb.velocity = new Vector2(0, 0);
         if(controller.isJumped)
         {
-            controller.rb.AddForce(new Vector2(bossX.direction.x * airForce, controller.rb.velocity.y),ForceMode2D.Impulse);
+            controller.rb.AddForce(new Vector2(controller.damageDirection.x * airForce, controller.rb.velocity.y),ForceMode2D.Impulse);
         }
         else
         {
-            controller.rb.AddForce(new Vector2(bossX.direction.x * groundForce, controller.rb.velocity.y),ForceMode2D.Impulse);
+            controller.rb.AddForce(new Vector2(controller.damageDirection.x * groundForce, controller.rb.velocity.y),ForceMode2D.Impulse);
             controller.StartCoroutine(GroundImpact());
         }
        
@@ -556,7 +556,7 @@ public class DeathState : BasePlayerState
     private IEnumerator GroundImpact()
     {
         Debug.Log("GroundImpact");
-        controller.rb.AddForce(new Vector2(bossX.direction.x * groundForce, controller.rb.velocity.y), ForceMode2D.Impulse);
+        controller.rb.AddForce(new Vector2(controller.damageDirection.x * groundForce, controller.rb.velocity.y), ForceMode2D.Impulse);
         yield return new WaitForSeconds(0.1f);
         controller.rb.velocity = Vector2.zero;
     }

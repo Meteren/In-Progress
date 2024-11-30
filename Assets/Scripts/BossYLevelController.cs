@@ -47,8 +47,9 @@ public class BossYLevelController : MonoBehaviour
     {
         foreach(var platform in sidePlatforms)
         {
+            platform.GetComponent<Collider2D>().enabled = !platform.GetComponent<Collider2D>().enabled;
             StartCoroutine(MovePlatforms(platform));
-            
+    
         }
 
     }

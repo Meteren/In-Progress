@@ -6452,6 +6452,9 @@ MonoBehaviour:
   isOnJumper: 0
   knockBack: 0
   canMove: 1
+  interaction: 0
+  canAttack: 0
+  punched: 0
   freeToGetUp: 1
   ground:
     serializedVersion: 2
@@ -6591,7 +6594,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1622721565
-  m_SortingLayer: -3
+  m_SortingLayer: -2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: f84b491dfffe3b0468a2202ae23de865, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

@@ -13,18 +13,24 @@ public class AttackFrame : MonoBehaviour
             }
             else
             {
-                
+                Debug.Log("Coll");
                 if(collision.gameObject.GetComponent<PlayerController>().stateMachine.currentState is not DamageState)
                 {
+                    PlayerController controller = collision.gameObject.GetComponent<PlayerController>();
                     Debug.Log("Hit");
-                    BossX bossX = GetComponentInParent<BossX>() ?? GameObject.Find("BossX").GetComponent<BossX>();
-                    collision.gameObject.GetComponent<PlayerController>().isDamaged = true;
-                    collision.gameObject.GetComponent<PlayerController>().OnDamage(bossX.InflictDamage());
+                    Boss boss = GetComponentInParent<Boss>() ?? GameObject.Find("BossX").GetComponent<Boss>();
+                    controller.isDamaged = true;
+                    controller.OnDamage(boss.InflictDamage());
+                    controller.damageDirection = GetComponentInParent<Boss>().direction;
                 }
                 
             }
-            
-            
+
+
+        }
+        else
+        {
+            Debug.Log("Player Null");
         }
     }
 }

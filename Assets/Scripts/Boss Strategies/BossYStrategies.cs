@@ -500,8 +500,8 @@ public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
     List<Transform> positionsToMoves => 
         bossY.gunPoints.Where(point => Vector2.Distance(point.transform.position, bossY.gun.transform.position) > 0.1f).ToList();
     Transform choosedPosition;
-    float secondsToWaitShooting = 0.4f;
-    float gunMoveSpeed = 13f;
+    float secondsToWaitShooting = 0.1f;
+    float gunMoveSpeed = 24f;
     float distance = 0.1f;
     int random => Random.Range(0, positionsToMoves.Count);
 

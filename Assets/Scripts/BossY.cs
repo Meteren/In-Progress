@@ -238,7 +238,7 @@ public class BossY : Boss
 
     public override float InflictDamage()
     {
-        throw new System.NotImplementedException();
+        return 10f;
     }
 
     public override void InitBehaviourTree()
@@ -248,7 +248,7 @@ public class BossY : Boss
 
     public override void OnDamage(float damageAmount)
     {
-        throw new System.NotImplementedException();
+        Debug.Log("Damage");
     }
 
     public IEnumerator SpecialOneProbability()

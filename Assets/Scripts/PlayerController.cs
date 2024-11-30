@@ -19,6 +19,8 @@ public class PlayerController : MonoBehaviour
 
     float originalDrag;
 
+    public Vector2 damageDirection = Vector2.zero;
+
     public ParticleSystem dashParticles;
 
     public float timeToPassInSlide;
@@ -61,6 +63,7 @@ public class PlayerController : MonoBehaviour
     public Vector2 endOfLedgeGrabPos;
     public bool canGrabLedge = true;
     public Transform playerFrame;
+    public Transform tracker;
 
     [Header("Health")]
     public PlayerHealthBar playerHealthBar;

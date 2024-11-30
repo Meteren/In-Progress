@@ -33,30 +33,81 @@ public class FireBall : MonoBehaviour
         Debug.Log("Collision");
         if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
-            PlayerController controller = GameManager.instance.blackBoard.GetValue("PlayerController", out PlayerController _controller) ? _controller : null;
-            if (controller != null)
+            PlayerController _controller = GameManager.instance.blackBoard.GetValue("PlayerController", out PlayerController __controller) ? __controller : null;
+           
+            if (collision.gameObject.TryGetComponent<Boss>(out Boss boss) && !boss.isDead && !_controller.isDead)
             {
-                Debug.Log("Not Null");
-            }
-            if (collision.gameObject.GetComponent<BossX>() != null && !collision.gameObject.GetComponent<BossX>().isDead && !controller.isDead)
-            {
-                BossX bossX = collision.gameObject.GetComponent<BossX>();
-                bossX.OnDamage(InflictDamage());
-                SpriteRenderer bossXRenderer = bossX.bossRenderer;
-                Vector2 contactPoint = collision.ClosestPoint(transform.position);
+                boss.OnDamage(InflictDamageToBoss());
+                SpriteRenderer bossRenderer = boss.bossRenderer;
                 Vector2 oppositeDirection = new Vector2(-1 * Direction.x, Direction.y);
-                HitParticle clonedHitParticle = ObjectPooling.DequeuePool<HitParticle>("HitParticle");
-                clonedHitParticle.Init(oppositeDirection, contactPoint, bossXRenderer);
-                ObjectPooling.EnqueuePool("FireBall", this);
+                InitFireBallImpact(collision,oppositeDirection,bossRenderer);
+                
+            }
+           
+            
+        }
+
+        if(collision.gameObject.TryGetComponent<PlayerController>(out PlayerController controller) && !controller.isDead)
+        {
+            if (!controller.isInDash)
+            {
+                Gun gun = GameObject.Find("Gun").GetComponent<Gun>();
+                if (!gun.isBelongToPlayer)
+                {
+                    if (controller.ledgeDetected)
+                    {
+
+                        controller.transform.position = controller.tracker.transform.position;
+
+                    }
+                    controller.isDamaged = true;
+                    controller.OnDamage(InflictDamageToPlayer());
+                    Vector2 direction = new Vector2(-1 * Direction.x, Direction.y);
+                    if (controller.isJumped)
+                    {
+                        controller.damageDirection = direction;
+                    }
+                    else
+                    {
+                        controller.damageDirection = Vector2.zero;
+                    }
+
+                    InitFireBallImpact(collision, direction);
+
+                }
             }
             
         }
 
+        if (collision.gameObject.TryGetComponent<SummonedSpirit>(out SummonedSpirit spirit))
+        {
+            Vector2 oppositeDirection = new Vector2(-1 * Direction.x, Direction.y);
+            InitFireBallImpact(collision, oppositeDirection);
+            if (!spirit.isAttached)
+            {
+                Destroy(spirit.gameObject);
+            }
+
+        }
+
     }
 
-    private float InflictDamage()
+    private void InitFireBallImpact(Collider2D collision,Vector2 direction, SpriteRenderer bossRenderer = null)
+    {
+        Vector2 contactPoint = collision.ClosestPoint(transform.position);
+        HitParticle clonedHitParticle = ObjectPooling.DequeuePool<HitParticle>("HitParticle");
+        ObjectPooling.EnqueuePool<FireBall>("FireBall", this);
+        clonedHitParticle.Init(direction, contactPoint, bossRenderer);
+    }
+
+    private float InflictDamageToBoss()
     {
         float inflictedDamage = 1f;
         return inflictedDamage;
+    }
+
+    private float InflictDamageToPlayer()
+    {
+        return 5f;
     }
 }
