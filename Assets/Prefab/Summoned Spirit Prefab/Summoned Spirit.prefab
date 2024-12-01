@@ -183,6 +183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a40e730c4870442b5258be0f754e5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  explosion: {fileID: 6127262436522950700, guid: 42f7903fee8c65d4c91416f1edbfb35f, type: 3}
   generationFrame: {fileID: 0}
   rb: {fileID: 8526135544445839735}
   isOffenseSpirit: 0

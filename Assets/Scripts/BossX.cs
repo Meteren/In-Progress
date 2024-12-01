@@ -13,13 +13,9 @@ public class BossX : Boss
     [Header("Dialogue States")] 
     public bool specialOneProgressed = false;
     public bool specialTwoProgressed = false;
-    public bool inDeathProgressed = false;
-    public bool inCharacterDeathProgressed = false;
     public bool firstEncounterReady = true;
     public bool inSpecialOneToSayIsReady = false;
     public bool inSpecialTwoToSayIsReady = false;
-    public bool inDeathToSayIsReady = false;
-    public bool inCharacterDeathToSayIsReady = false;
 
     [Header("Conditions")]
     
@@ -32,7 +28,6 @@ public class BossX : Boss
     public bool isDashAttackInProgress = false;
     public bool isUpThere = false;
     public bool onLand = false;
-    public bool canAvatarDie = false;
     public bool increaseProbOfDashAttack = false;
     public bool initBossXSequence = false;
 
@@ -103,11 +98,11 @@ public class BossX : Boss
 
         SequenceNode dieSequence = new SequenceNode("DieSequence",2);
         Leaf dieCondition = new Leaf("DieCondition", new Condition(() => isDead));
-        Leaf dieStrategy = new Leaf("DieStrategy", new DieStrategy());
+        Leaf dieStrategy = new Leaf("DieStrategy", new DieStrategy(this));
 
         SequenceNode doNothingSequence = new SequenceNode("DoNothingSequence", 1);
         Leaf doNothingCondition = new Leaf("DoNothingCondition", new Condition(() => playerController.isDead));
-        Leaf doNothingStrategy = new Leaf("DoNothingStrategy", new DoNothingStrategy());
+        Leaf doNothingStrategy = new Leaf("DoNothingStrategy", new DoNothingStrategy(this));
 
         SortedSelectorNode selectSpecialAttack = new SortedSelectorNode("SelectSpecialAttack",5);
         SequenceNode specialAttackOneSequence = new SequenceNode("SpecialAttackOneSequence", 10);

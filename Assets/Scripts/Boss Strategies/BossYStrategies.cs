@@ -65,6 +65,7 @@ public class LongRangeAttackStrategyForBossY : MainStrategyForBossY, IStrategy
     {
         //bossY.rb.velocity = Vector2.zero;
         Debug.Log("Long Range attack");
+       
         if (!bossY.isInLongRangeAttack)
         {
             bossY.isInLongRangeAttack = true;
@@ -102,6 +103,10 @@ public class GetCloseStrategy : MainStrategyForBossY, IStrategy
     bool previousLocSpotted = false;
     public Node.NodeStatus Evaluate()
     {
+        if (bossY.isDead)
+        {
+            return Node.NodeStatus.RUNNING;
+        }
         Debug.Log("GetCloseStrategy");
         if (!previousLocSpotted)
         {
@@ -127,6 +132,10 @@ public class GetAwayStrategy : MainStrategyForBossY, IStrategy
     float distance = 0f;
     public Node.NodeStatus Evaluate()
     {
+        if (bossY.isDead)
+        {
+            return Node.NodeStatus.RUNNING;
+        }
         Debug.Log("GetAwayStrategy");
         bossY.transform.position = Vector2.MoveTowards(bossY.transform.position, bossY.previousLocation, Time.deltaTime * speed);
 
@@ -161,7 +170,10 @@ public class MoveToPointStrategy : MainStrategyForBossY, IStrategy
     public Node.NodeStatus Evaluate()
     {
         Debug.Log("MoveToPoint");
-
+        if (bossY.isDead)
+        {
+            return Node.NodeStatus.RUNNING;
+        }
         if (!speedSetted)
         {
             bossY.rb.velocity = Vector2.zero;
@@ -198,6 +210,10 @@ public class SetAttachedSpiritsAroundStrategy : MainStrategyForBossY, IStrategy
     public Node.NodeStatus Evaluate()
     {
         Debug.Log("SetSpiritStrategy");
+        if (bossY.isDead)
+        {
+            return Node.NodeStatus.RUNNING;
+        }
         if (!spiritsSet)
         {
             bossY.canSummon = true;
@@ -242,6 +258,14 @@ public class ShootSpiritsStrategy : MainStrategyForBossY, IStrategy
     AnimatorStateInfo animatorStateInfo;
     public Node.NodeStatus Evaluate()
     {
+        if (playerController.isDead)
+        {
+            return Node.NodeStatus.RUNNING;
+        }
+        if (bossY.isDead)
+        {
+            return Node.NodeStatus.RUNNING;
+        }
         Debug.Log("ShootSpiritStrategy");
         animatorStateInfo = bossY.bossAnim.GetCurrentAnimatorStateInfo(0);
         if (!isInWaitSituation)
@@ -301,8 +325,7 @@ public class ShootSpiritsStrategy : MainStrategyForBossY, IStrategy
     }
 
     private void ShootSpirit()
-    {
-        
+    {        
         SummonedSpirit dequeuedSpirit = bossY.offenseSpirits.Dequeue();
         dequeuedSpirit.isAttached = false;
     }
@@ -327,6 +350,10 @@ public class NeedleAttackStrategy : MainStrategyForBossY, IStrategy
     AnimatorStateInfo animatorStateInfo;
     public Node.NodeStatus Evaluate()
     {
+        if (bossY.isDead)
+        {
+            return Node.NodeStatus.RUNNING;
+        }
         Debug.Log("NeedleAttackStrategy");
         if (!isInProgress)
         {
@@ -512,6 +539,10 @@ public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
     bool canShoot = false;
     public Node.NodeStatus Evaluate()
     {
+        if (playerController.isDead)
+        {
+            return Node.NodeStatus.RUNNING;
+        }
         Debug.Log("ChangeGunPositionAndShootStrategy");
         if (initShooting)
         {

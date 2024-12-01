@@ -432,33 +432,6 @@ class LandAndInflictDamageStrategy : MainStrategyForBossX, IStrategy
     }
 }
 
-public class DieStrategy : MainStrategyForBossX, IStrategy
-{
-    public Node.NodeStatus Evaluate()
-    {
-        if (!bossX.inDeathProgressed)
-        {
-            bossX.inDeathToSayIsReady = true;
-            bossX.inDeathProgressed = true;
-        }
-        bossX.canAvatarDie = true;
-        return Node.NodeStatus.SUCCESS;
-    }
-}
 
-public class DoNothingStrategy : MainStrategyForBossX, IStrategy
-{
-    //say something after death of player
-    public Node.NodeStatus Evaluate()
-    {
-        if (!bossX.inCharacterDeathProgressed)
-        {
-            bossX.inCharacterDeathToSayIsReady = true;
-            bossX.inCharacterDeathProgressed = true;
-        }
-        
-        return Node.NodeStatus.SUCCESS;
-    }
-}
 
 

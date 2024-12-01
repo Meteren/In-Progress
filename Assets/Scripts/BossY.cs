@@ -30,6 +30,8 @@ public class BossY : Boss
     public Queue<SummonedSpirit> offenseSpirits = new Queue<SummonedSpirit>();
     public List<SummonedSpirit> defenseSpirits = new List<SummonedSpirit>();
 
+    [SerializeField] private ParticleSystem explosion;
+
     [Header("Points")]
     [SerializeField] private Transform specialPoint;
     [SerializeField] private Transform patrolLineOne;
@@ -59,6 +61,9 @@ public class BossY : Boss
     public BossYLevelController levelController;
     void Start()
     {
+        currentHealth = maxHealth;
+        bossHealthBar.SetMaxHealth(maxHealth);
+
         InitBehaviourTree();
         IgnoreCollision();
 
@@ -172,6 +177,20 @@ public class BossY : Boss
         Leaf moveToClosestWayPointFasterStrategy =
             new Leaf("MoveToClosestWayPointFasterStrategy", new MoveToPointStrategy(closestPatrolPointToPlayer, 20f,false));
 
+        SequenceNode dieSequence = new SequenceNode("DieSequence", 2);
+        Leaf dieCondition = new Leaf("DieCondition", new Condition(() => isDead));
+        Leaf dieStrategy = new Leaf("DieStrategy", new DieStrategy(this));
+
+        dieSequence.AddChild(dieCondition);
+        dieSequence.AddChild(dieStrategy);
+
+        SequenceNode doNothingSequence = new SequenceNode("DoNothingSequence", 1);
+        Leaf doNothingCondition = new Leaf("DoNothingCondition", new Condition(() => playerController.isDead));
+        Leaf doNothingStrategy = new Leaf("DoNothingStrategy", new DoNothingStrategy(this));
+
+        doNothingSequence.AddChild(doNothingCondition);
+        doNothingSequence.AddChild(doNothingStrategy);
+
         processSpecialTwoSequence.AddChild(getGunAndMoveUpStrategy);
         processSpecialTwoSequence.AddChild(sendGunToPointAndRotateStrategy);
         processSpecialTwoSequence.AddChild(changeGunPositionAndShootStrategy);
@@ -193,6 +212,8 @@ public class BossY : Boss
         attackSelector.AddChild(closeRangeAttackSequence);
 
         //main selector
+        mainSelector.AddChild(doNothingSequence);
+        mainSelector.AddChild(dieSequence);
         mainSelector.AddChild(specialAttackSelector);
         mainSelector.AddChild(attackSelector);
         mainSelector.AddChild(chaseSequence);
@@ -209,10 +230,16 @@ public class BossY : Boss
     }
     void Update()
     {
+        if (currentHealth <= 0)
+        {
+            isDead = true;
+            canAvatarDie = true;
+        }
+
         SetDireaction();
         ListenSpirits();
         if (!bossAnim.GetCurrentAnimatorStateInfo(0).IsName("CloseRangeAttack")
-            && !bossAnim.GetCurrentAnimatorStateInfo(0).IsName("LongRangeAttack"))
+            && !bossAnim.GetCurrentAnimatorStateInfo(0).IsName("LongRangeAttack") && !isDead)
             SetRotation();
 
         if (Input.GetKeyDown(KeyCode.B))
@@ -234,6 +261,7 @@ public class BossY : Boss
         bossAnim.SetBool("activateSkill", activateSkill);
         bossAnim.SetBool("summonAttack", summonAttack);
         bossAnim.SetBool("canSummon", canSummon);
+        bossAnim.SetBool("isDead", isDead);
     }
 
     public override float InflictDamage()
@@ -248,7 +276,8 @@ public class BossY : Boss
 
     public override void OnDamage(float damageAmount)
     {
-        Debug.Log("Damage");
+        currentHealth -= damageAmount;
+        bossHealthBar.SetCurrentHealth(currentHealth);
     }
 
     public IEnumerator SpecialOneProbability()
@@ -279,6 +308,17 @@ public class BossY : Boss
         yield return new WaitForSeconds(0.5f);
         wideChannel.m_AmplitudeGain = 0;
     }
+
+    public void AfterDeathEvent()
+    {
+        Color color = bossRenderer.color;
+
+        color.a = 0;
+
+        bossRenderer.color = color;
+    }
+
+   
 
 
 }

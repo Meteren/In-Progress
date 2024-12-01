@@ -36,8 +36,12 @@ public abstract class Boss : MonoBehaviour
     public bool isDead = false;
     public bool isFacingLeft = true;
     public bool isInCloseRangeAttack = false;
+    public bool canAvatarDie = false;
     public bool isInLongRangeAttack = false;
-
+    public bool inDeathProgressed = false;
+    public bool inDeathToSayIsReady = false;
+    public bool inCharacterDeathToSayIsReady = false;
+    public bool inCharacterDeathProgressed = false;
     public abstract void OnDamage(float damageAmount);
 
     public abstract float InflictDamage();

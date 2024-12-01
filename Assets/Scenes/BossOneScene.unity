@@ -5828,7 +5828,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -470080479
-  m_SortingLayer: -2
+  m_SortingLayer: -4
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -6832,7 +6832,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -470080479
-  m_SortingLayer: -2
+  m_SortingLayer: -4
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -7112,6 +7112,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   offset: 1.16
   gunParticle: {fileID: 1405502104}
+  isBelongToPlayer: 1
+  isPositionSetted: 1
   gunExplosionEffect: {fileID: 188459471}
 --- !u!212 &982335908
 SpriteRenderer:
@@ -13203,13 +13205,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1468342867}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0b7367c5b10f73f4da6ffd1057fb6ee8, type: 3}
+  m_Script: {fileID: 11500000, guid: 70f8e8a2b48ac8c49a7a35fbe2d9baef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   healthSlider: {fileID: 1468342870}
   avatarOfHealthBar: {fileID: 745869405}
   avatarAnimator: {fileID: 745869404}
-  bossX: {fileID: 1983357490}
+  boss: {fileID: 1983357495}
 --- !u!1 &1548066012
 GameObject:
   m_ObjectHideFlags: 0
@@ -18687,7 +18689,7 @@ GameObject:
   - component: {fileID: 1983357493}
   - component: {fileID: 1983357491}
   - component: {fileID: 1983357494}
-  - component: {fileID: 1983357490}
+  - component: {fileID: 1983357495}
   m_Layer: 7
   m_Name: BossX
   m_TagString: Untagged
@@ -18755,7 +18757,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1455790805
-  m_SortingLayer: -4
+  m_SortingLayer: -3
   m_SortingOrder: 0
   m_Sprite: {fileID: 4723107735738678597, guid: fc46633b0eb321e46838bcb9ff2d4150, type: 3}
   m_Color: {r: 1, g: 0.9647059, b: 1, a: 1}
@@ -18796,84 +18798,6 @@ Transform:
   - {fileID: 1682369852}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
---- !u!114 &1983357490
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1983357486}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3891f2715d912fd48b303b9e9d7b8a32, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ground:
-    serializedVersion: 2
-    m_Bits: 8
-  bossLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  bossRenderer: {fileID: 1983357488}
-  bossAnim: {fileID: 1983357487}
-  direction: {x: 0, y: 0}
-  xVelocity: 0
-  yVelocity: 0
-  bossHealthBar: {fileID: 1468342871}
-  currentHealth: 0
-  maxHealth: 100
-  rb: {fileID: 1983357493}
-  isDead: 0
-  isFacingLeft: 1
-  panel: {fileID: 1585917077}
-  duration: 0
-  specialOneProgressed: 0
-  specialTwoProgressed: 0
-  inDeathProgressed: 0
-  inCharacterDeathProgressed: 0
-  firstEncounterReady: 1
-  inSpecialOneToSayIsReady: 0
-  inSpecialTwoToSayIsReady: 0
-  inDeathToSayIsReady: 0
-  inCharacterDeathToSayIsReady: 0
-  isInCloseRangeAttack: 0
-  isInLongRangeAttack: 0
-  isJumped: 0
-  canAttack: 0
-  isDashReady: 0
-  isStanceReady: 0
-  isRandomLongRangeInProgress: 0
-  isNormalDashAttackInProgress: 0
-  isDashAttackInProgress: 0
-  isUpThere: 0
-  onLand: 0
-  canAvatarDie: 0
-  increaseProbOfDashAttack: 0
-  initBossXSequence: 0
-  specialOneCoroutineBlocker: 0
-  specialTwoCoroutineBlocker: 0
-  isSpecialOneReady: 0
-  isSpecialTwoReady: 0
-  inSpecialTwo: 0
-  probOfLongRangeAttack: 0
-  probOfSpecialOneAttack: 0
-  probOfSpecialTwoAttack: 0
-  probOfDashAttack: 0
-  distanceToGround: 1.88
-  distanceToRight: 9.1
-  distanceToLeft: 9.09
-  wayPointRight: {fileID: 66637479}
-  wayPointLeft: {fileID: 2007377883}
-  upPoint: {fileID: 1635476816}
-  downPoint: {fileID: 560630891}
-  offsetWayPoint: {fileID: 200273726}
-  defaultGravity: 0
-  groundImpactParticle: {fileID: 1548066014}
-  firstEncounter: {fileID: 11400000, guid: 7d4a486b731eeee4fa11bb69da7313c4, type: 2}
-  inSepcialOneToSay: {fileID: 11400000, guid: b60af34bddb0b054e9f75e4ce3cb77d8, type: 2}
-  inSpecialTwoToSay: {fileID: 11400000, guid: 46923812c510a0045acb185d713bdc50, type: 2}
-  inDeathToSay: {fileID: 11400000, guid: ad2a43d80f3afec488c4e8c584b6b030, type: 2}
-  inCharacterDeathToSay: {fileID: 11400000, guid: fef4135aa86afae4193efe4a335feb12, type: 2}
 --- !u!70 &1983357491
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -19016,6 +18940,84 @@ PolygonCollider2D:
       - {x: 0.88255596, y: -1.6418405}
       - {x: 1.382556, y: -1.6418405}
   m_UseDelaunayMesh: 0
+--- !u!114 &1983357495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1983357486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5673fec4d89a1da4fbbbb25d7b5b51ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ground:
+    serializedVersion: 2
+    m_Bits: 8
+  bossLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  bossRenderer: {fileID: 1983357488}
+  bossAnim: {fileID: 1983357487}
+  direction: {x: 0, y: 0}
+  xVelocity: 0
+  yVelocity: 0
+  bossHealthBar: {fileID: 1468342871}
+  currentHealth: 0
+  maxHealth: 100
+  rb: {fileID: 1983357493}
+  isDead: 0
+  isFacingLeft: 1
+  isInCloseRangeAttack: 0
+  canAvatarDie: 0
+  isInLongRangeAttack: 0
+  inDeathProgressed: 0
+  inDeathToSayIsReady: 0
+  inCharacterDeathToSayIsReady: 0
+  inCharacterDeathProgressed: 0
+  panel: {fileID: 1585917077}
+  duration: 0
+  specialOneProgressed: 0
+  specialTwoProgressed: 0
+  firstEncounterReady: 1
+  inSpecialOneToSayIsReady: 0
+  inSpecialTwoToSayIsReady: 0
+  isJumped: 0
+  canAttack: 0
+  isDashReady: 0
+  isStanceReady: 0
+  isRandomLongRangeInProgress: 0
+  isNormalDashAttackInProgress: 0
+  isDashAttackInProgress: 0
+  isUpThere: 0
+  onLand: 0
+  increaseProbOfDashAttack: 0
+  initBossXSequence: 0
+  specialOneCoroutineBlocker: 0
+  specialTwoCoroutineBlocker: 0
+  isSpecialOneReady: 0
+  isSpecialTwoReady: 0
+  inSpecialTwo: 0
+  probOfLongRangeAttack: 0
+  probOfSpecialOneAttack: 0
+  probOfSpecialTwoAttack: 0
+  probOfDashAttack: 0
+  distanceToGround: 0
+  distanceToRight: 0
+  distanceToLeft: 0
+  wayPointRight: {fileID: 66637479}
+  wayPointLeft: {fileID: 2007377883}
+  upPoint: {fileID: 1635476816}
+  downPoint: {fileID: 560630891}
+  offsetWayPoint: {fileID: 200273726}
+  defaultGravity: 0
+  groundImpactParticle: {fileID: 1548066014}
+  firstEncounter: {fileID: 11400000, guid: 7d4a486b731eeee4fa11bb69da7313c4, type: 2}
+  inSepcialOneToSay: {fileID: 11400000, guid: b60af34bddb0b054e9f75e4ce3cb77d8, type: 2}
+  inSpecialTwoToSay: {fileID: 11400000, guid: 46923812c510a0045acb185d713bdc50, type: 2}
+  inDeathToSay: {fileID: 11400000, guid: ad2a43d80f3afec488c4e8c584b6b030, type: 2}
+  inCharacterDeathToSay: {fileID: 11400000, guid: fef4135aa86afae4193efe4a335feb12, type: 2}
 --- !u!1 &1983701135
 GameObject:
   m_ObjectHideFlags: 0
@@ -19672,7 +19674,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -470080479
-  m_SortingLayer: -2
+  m_SortingLayer: -4
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
@@ -19785,7 +19787,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -470080479
-  m_SortingLayer: -2
+  m_SortingLayer: -4
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 0, g: 0, b: 0, a: 1}

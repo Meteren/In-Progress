@@ -7,6 +7,8 @@ public class SummonedSpirit : MonoBehaviour
         GameManager.instance.blackBoard.GetValue("PlayerController", out PlayerController _controller) ? _controller : null;
     BossY bossY => GameManager.instance.blackBoard.GetValue("BossY", out BossY _bossY) ? _bossY : null;
 
+    [SerializeField] private ParticleSystem explosion; 
+
     public Vector2 playerDirection => (controller.transform.position - transform.position).normalized;
     Vector2 currentDirection;
 
@@ -40,6 +42,7 @@ public class SummonedSpirit : MonoBehaviour
         SetDirection(currentDirection);
         SetRotation();
         AnimationController();
+        CheckIfNeededAnymore();
     }
 
     public void Init(Transform centerPoint, float angle, float radius,bool isOffenseSpirit,bool isAttached, Collider2D generationFrame)
@@ -150,6 +153,17 @@ public class SummonedSpirit : MonoBehaviour
                 Destroy(gameObject);
             }
             
+        }
+    }
+
+    private void CheckIfNeededAnymore()
+    {
+        if (bossY.isDead)
+        {
+            ParticleSystem instantiadedExplosion = Instantiate(explosion);
+            instantiadedExplosion.transform.position = transform.position;
+            instantiadedExplosion.Play();
+            Destroy(gameObject);
         }
     }
 
