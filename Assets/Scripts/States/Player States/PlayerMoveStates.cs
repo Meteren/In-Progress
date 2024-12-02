@@ -484,7 +484,7 @@ public class DamageState : BasePlayerState
 
     private IEnumerator TimeToStay()
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.15f);
         controller.isDamaged = false;
     }
 
@@ -717,6 +717,7 @@ public class AttackState : BasePlayerState
 
     public override void OnExit()
     {
+        controller.canAttack = false;
         base.OnExit();
     }
 

@@ -15,7 +15,13 @@ public class BossY : Boss
     public bool blockSpecialOneCoroutine = false;
     public bool specialTwoReady = false;
     public bool isSpecialTwoFinished = false;
+    public bool specialRLAReady = false;
+    public bool specialOneReady = false;
+    public bool blockSpecialTwoCoroutine = false;
 
+
+    int healthLevelForSpecialTwo = 40;
+    int healthLevelForSpecialOne = 70;
     new public float distanceToPlayer =>
         Vector2.Distance(new Vector2(playerController.transform.position.x, 0), new Vector2(transform.position.x, 0)); 
     
@@ -23,12 +29,14 @@ public class BossY : Boss
      
     public Collider2D generationFrame;
 
-    float probabilityOfSpecialOne;
+    int probabilityOfSpecialOne;
+    int probabilityOfSpecialTwo;
 
     public Gun gun;
 
     public Queue<SummonedSpirit> offenseSpirits = new Queue<SummonedSpirit>();
     public List<SummonedSpirit> defenseSpirits = new List<SummonedSpirit>();
+    public List<SummonedSpirit> spiritsAround = new List<SummonedSpirit>();
 
     [SerializeField] private ParticleSystem explosion;
 
@@ -59,6 +67,9 @@ public class BossY : Boss
 
     [Header("Level Controller")]
     public BossYLevelController levelController;
+
+    
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -99,7 +110,7 @@ public class BossY : Boss
         //special long range
         SequenceNode specialLRASequence = new SequenceNode("SpecialLongRangeAttackSequence",5);
         Leaf specialLRACondition = new Leaf("SpecialLongRangeCondition", new Condition(()
-            => distanceToPlayer < 5f && distanceToPlayer > 2.8f));
+            => (distanceToPlayer < 5f && distanceToPlayer > 2.8f) && specialRLAReady));
         Leaf getCloseStrategy = new Leaf("GetCloseStrategy", new GetCloseStrategy());
         Leaf getAwayStrategy = new Leaf("GetAwayStrategy", new GetAwayStrategy());
 
@@ -109,10 +120,7 @@ public class BossY : Boss
 
         Leaf specialOneCondition = new Leaf("SpecialOneCondition",new Condition(() =>
         {
-            if(!blockSpecialOneCoroutine)
-                StartCoroutine(SpecialOneProbability());
-
-            return probabilityOfSpecialOne >= 85;
+            return specialOneReady;
         }));
 
         SequenceNode processSpecialAttackOneSequence = new SequenceNode("ProcessSpecialAttackOneSequence");
@@ -163,7 +171,10 @@ public class BossY : Boss
         //special two
         SequenceNode specialAttackTwoSequence = new SequenceNode("SpecialAttackTwoSequence",10);
 
-        Leaf specialAttackTwoCondition = new Leaf("SpecialAttackTwoCondition",new Condition(() => specialTwoReady));
+        Leaf specialAttackTwoCondition = new Leaf("SpecialAttackTwoCondition",new Condition(() =>
+        {
+            return specialTwoReady && spiritsAround.Count == 0;
+        }));
 
         specialAttackTwoSequence.AddChild(specialAttackTwoCondition);
 
@@ -230,11 +241,32 @@ public class BossY : Boss
     }
     void Update()
     {
+
+        if(currentHealth <= 75)
+        {
+            specialRLAReady = true;
+        }
+
+        if(currentHealth < healthLevelForSpecialOne)
+        {
+            specialOneReady = true;
+            healthLevelForSpecialOne -= 20;
+        }
+
+        if(currentHealth <= healthLevelForSpecialTwo)
+        {
+            specialTwoReady = true;
+            healthLevelForSpecialTwo -= 10;
+        }
+
         if (currentHealth <= 0)
         {
             isDead = true;
             canAvatarDie = true;
         }
+
+        Debug.Log("Boss Health: " + currentHealth);
+        Debug.Log("Spirits Around: " + spiritsAround.Count);
 
         SetDireaction();
         ListenSpirits();
@@ -246,11 +278,6 @@ public class BossY : Boss
             firstToSay = true;
        
         AnimationController();
-
-        if (Input.GetKeyDown(KeyCode.O))
-        {
-            specialTwoReady = !specialTwoReady;
-        }
   
     }
 
@@ -266,7 +293,7 @@ public class BossY : Boss
 
     public override float InflictDamage()
     {
-        return 10f;
+        return 7f;
     }
 
     public override void InitBehaviourTree()
@@ -287,6 +314,15 @@ public class BossY : Boss
         yield return new WaitForSeconds(1f);
         blockSpecialOneCoroutine = false;
         
+    }
+
+    public IEnumerator SpecialTwoProbability()
+    {
+        probabilityOfSpecialTwo = Random.Range(0, 100);
+        blockSpecialTwoCoroutine = true;
+        yield return new WaitForSeconds(1f);
+        blockSpecialTwoCoroutine = false;
+
 
     }
 
@@ -300,13 +336,6 @@ public class BossY : Boss
         offenseSpirits = tempOffenseQueue;
         defenseSpirits = tempDefenseQueue;
        
-    }
-
-    public IEnumerator ShakeWideCamera()
-    {    
-        wideChannel.m_AmplitudeGain = 2.5f;
-        yield return new WaitForSeconds(0.5f);
-        wideChannel.m_AmplitudeGain = 0;
     }
 
     public void AfterDeathEvent()

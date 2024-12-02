@@ -136,7 +136,7 @@ public class SummonedSpirit : MonoBehaviour
 
     private float InflictDamage()
     {
-        return 3f;
+        return 2f;
     }
 
 
@@ -149,7 +149,6 @@ public class SummonedSpirit : MonoBehaviour
                 controller.isDamaged = true;
                 controller.damageDirection = currentDirection;
                 controller.OnDamage(InflictDamage());
-
                 Destroy(gameObject);
             }
             
@@ -167,5 +166,13 @@ public class SummonedSpirit : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (bossY.spiritsAround.Contains(this))
+        {
+            bossY.spiritsAround.Remove(this);
+        }
+        
+    }
 
 }

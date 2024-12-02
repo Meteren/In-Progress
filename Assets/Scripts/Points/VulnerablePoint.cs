@@ -7,10 +7,14 @@ public class VulnerablePoint : Point, IDamageable
     public bool isVulnerable {
         get; set; }
 
+    [SerializeField] private ParticleSystem particle;
+
     public void OnDamage()
     {
         if (isVulnerable)
         {
+            particle.transform.position = GetComponentInParent<Transform>().transform.position;
+            particle.Play();
             transform.parent.gameObject.SetActive(false);
         }
     }
@@ -33,9 +37,17 @@ public class VulnerablePoint : Point, IDamageable
         }
             
     }
-    private void Update()
+
+    private void OnTriggerStay2D(Collider2D collision)
     {
-        Debug.Log(isVulnerable);
-    }
+        if(collision.gameObject.TryGetComponent<PlayerController>(out PlayerController controller))
+        {
+            if (controller.isDead)
+            {
+                controller.interaction = false;
+                UIController.instance.DiasbleKey();
+            }
+        }
+    } 
 
 }

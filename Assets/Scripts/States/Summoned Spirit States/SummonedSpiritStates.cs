@@ -133,33 +133,6 @@ public class OrbitalMoveState : BaseSummonedSpiritState
         float xPos = Mathf.Cos(angle) * radius;
         float yPos = Mathf.Sin(angle) * radius;
         
-        /*if (setRadius)
-        {
-            if (!radiusSettedWider)
-            {
-                radius += Time.deltaTime * radiusIncreaseSpeed;
-                if (radius >= baseRadius + radiusIncreaseAmount)
-                {
-                    setRadius = false;
-                    radiusSettedWider= true;
-                    counter = 3f;
-                }
-            }
-            else
-            {
-                radius -= Time.deltaTime * radiusIncreaseSpeed;
-                if (radius <= baseRadius)
-                {
-                    setRadius = false;
-                    radiusSettedWider = false;
-                    counter = 3f;
-                    radius = baseRadius;
-                }
-            }
-
-            
-        }*/
-
         spirit.transform.position = new Vector2(spirit.centerPoint.transform.position.x + xPos,spirit.centerPoint.transform.position.y + yPos);
 
         angle += Time.deltaTime * moveSpeed;

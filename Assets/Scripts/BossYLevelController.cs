@@ -37,8 +37,15 @@ public class BossYLevelController : MonoBehaviour
     {
         foreach(var platform in middlePlatforms)
         {
-            SpriteRenderer renderer = platform.GetComponent<SpriteRenderer>();
-            StartCoroutine(ChangeOpacity(renderer,platform));
+            SpriteRenderer platformRenderer = platform.GetComponent<SpriteRenderer>();
+            SpriteRenderer arrowRenderer = platform.GetComponent<SpriteRenderer>();
+            if (platform.GetComponentInChildren<VulnerablePoint>() != null)
+            {
+                Debug.Log("Heeey");
+                arrowRenderer = platform.transform.Find("Arrow").GetComponent<SpriteRenderer>();
+            }  
+           
+            StartCoroutine(ChangeOpacity(platformRenderer,arrowRenderer,platform));
 
         }
     }
@@ -54,9 +61,10 @@ public class BossYLevelController : MonoBehaviour
 
     }
 
-    private IEnumerator ChangeOpacity(SpriteRenderer renderer, Transform platform)
+    private IEnumerator ChangeOpacity(SpriteRenderer platformRenderer,SpriteRenderer arrowRenderer, Transform platform)
     {
-        Color color = renderer.color;
+        Color platformColor = platformRenderer.color;
+        Color arrowColor = arrowRenderer.color;
 
         if (platformsReady)
             platform.gameObject.SetActive(true);
@@ -66,29 +74,32 @@ public class BossYLevelController : MonoBehaviour
             
             if (platformsReady)
             {
-                color.a = i;
+                platformColor.a = arrowColor.a = i;
                 platform.GetComponent<Collider2D>().enabled = true;
             }
             else
             {
-                color.a = 1 - i;
+                platformColor.a = arrowColor.a = 1 - i;
                 platform.gameObject.layer = 0;
                 platform.GetComponent<Collider2D>().enabled = false;
 
             }
-            renderer.color = color;
+            platformRenderer.color = platformColor;
+            arrowRenderer.color = arrowColor;
             yield return new WaitForSeconds(0.1f);
         }
         if (platformsReady)
         {
-            color.a = 1f;
+            platformColor.a = 1f;
+            arrowColor.a = 1f;
             platform.gameObject.layer = LayerMask.NameToLayer("Ground");
             platform.GetComponent<Collider2D>().enabled = true;
         }
 
         else
         {
-            color.a = 0f;
+            platformColor.a = 0f;
+            arrowColor.a = 0f;
             platform.gameObject.SetActive(false);
 
         }

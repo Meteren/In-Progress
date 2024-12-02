@@ -23,6 +23,7 @@ public class CloseRangeAttackStrategyForBossY : MainStrategyForBossY, IStrategy
 
         if (!bossY.isInCloseRangeAttack)
         {
+            bossY.rb.velocity = Vector2.zero;
             bossY.isInCloseRangeAttack = true;
 
         }
@@ -68,6 +69,7 @@ public class LongRangeAttackStrategyForBossY : MainStrategyForBossY, IStrategy
        
         if (!bossY.isInLongRangeAttack)
         {
+            bossY.rb.velocity = Vector2.zero;
             bossY.isInLongRangeAttack = true;
 
         }
@@ -303,6 +305,7 @@ public class ShootSpiritsStrategy : MainStrategyForBossY, IStrategy
                 {
                     spirit.isAttached = false;
                     spirit.selectRandomPos = true;
+                    bossY.spiritsAround.Add(spirit);
                 }
                 bossY.defenseSpirits.Clear();
                 bossY.StartCoroutine(Timer());
@@ -310,6 +313,7 @@ public class ShootSpiritsStrategy : MainStrategyForBossY, IStrategy
                 finishStage = false;
                 isInWaitSituation = false;
                 bossY.summonAttack = false;
+                bossY.specialOneReady = false;
                 return Node.NodeStatus.SUCCESS;
             }
             else
@@ -328,6 +332,7 @@ public class ShootSpiritsStrategy : MainStrategyForBossY, IStrategy
     {        
         SummonedSpirit dequeuedSpirit = bossY.offenseSpirits.Dequeue();
         dequeuedSpirit.isAttached = false;
+        bossY.spiritsAround.Add(dequeuedSpirit);
     }
 
     private IEnumerator Timer()
@@ -474,7 +479,6 @@ public class SendGunToPointAndRotateStrategy : MainStrategyForBossY, IStrategy
             bossY.levelController.SetPlatforms();
             randomGunPoint = bossY.gunPoints[Random.Range(0, bossY.gunPoints.Count)];
             angle = bossY.gun.transform.eulerAngles.z % 360;
-            Debug.Log(angle);
             isPointSelected = true;
         }
 
@@ -603,6 +607,7 @@ public class ChangeGunPositionAndShootStrategy : MainStrategyForBossY, IStrategy
         playerController.punched = false;
         initShooting= true;
         canShoot = false;
+        bossY.specialTwoReady = false;
     }
 
     private IEnumerator WaitShooting()
