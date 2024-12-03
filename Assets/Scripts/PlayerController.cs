@@ -16,6 +16,8 @@ public class PlayerController : MonoBehaviour
     public float doubleJumpForce;
     [SerializeField] private Collider2D groundCheck;
     public Transform offset;
+    public Transform right;
+    public Transform left;
 
     float originalDrag;
 

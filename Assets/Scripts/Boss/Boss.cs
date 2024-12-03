@@ -70,6 +70,7 @@ public abstract class Boss : MonoBehaviour
         }
     }
 
+
     public void SetDireaction()
     {
         direction = (playerController.transform.position - transform.position).normalized;
